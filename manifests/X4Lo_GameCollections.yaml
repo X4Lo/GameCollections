@@ -1,0 +1,28 @@
+AddonId: GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54
+Type: Generic
+Name: Game Collections
+Author: X4Lo
+ShortDescription: Group games into custom collections with a poster, description and rating.
+InstallerManifestUrl: https://raw.githubusercontent.com/X4Lo/GameCollections/main/manifests/installer_manifest.yaml
+SourceUrl: https://github.com/X4Lo/GameCollections
+Description: |-
+  Organize your library into custom collections, such as "Couch co-op", "Backlog 2026" or "Best RPGs".
+
+  - Right-click any game (or several) and choose "Add to Collection..." to tick existing collections or create a new one from the search box.
+  - Open "Collections" in the sidebar to browse every collection in a grid or a list, search them, and create, edit or delete them.
+  - Each collection has a title, description, 0-10 rating and poster. Without a custom poster, the first game's cover is used.
+  - A collection page lists its games with search, sorting, an "installed only" filter, and Play/Install, Show in library and Remove actions.
+
+  Collections only reference games, so deleting a collection never touches your library. Games removed from Playnite are dropped from collections automatically.
+Tags: ["Generic", "Library", "Organization", "Collections"]
+Links:
+  GitHub: https://github.com/X4Lo/GameCollections
+  User Guide: https://github.com/X4Lo/GameCollections/blob/main/docs/user-guide.md
+IconUrl: https://raw.githubusercontent.com/X4Lo/GameCollections/main/source/GameCollections/icon.png
+Screenshots:
+  - Thumbnail: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/collections-page_thumb.webp
+    Image: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/collections-page.webp
+  - Thumbnail: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/collection-details-page_thumb.webp
+    Image: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/collection-details-page.webp
+  - Thumbnail: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/add-to-collection-dialog_thumb.webp
+    Image: https://raw.githubusercontent.com/X4Lo/GameCollections/main/screenshots/add-to-collection-dialog.webp

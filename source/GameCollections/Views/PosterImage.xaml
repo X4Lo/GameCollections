@@ -1,0 +1,22 @@
+<UserControl x:Class="GameCollections.Views.PosterImage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Focusable="False">
+    <!-- Poster with a themed placeholder that shows while no image is available. -->
+    <Grid>
+        <Border CornerRadius="{Binding CornerRadius, ElementName=Root}"
+                Background="{DynamicResource NormalBrush}">
+            <TextBlock Text="{Binding Glyph, ElementName=Root}"
+                       FontFamily="{DynamicResource FontIcoFont}"
+                       FontSize="{Binding GlyphSize, ElementName=Root}"
+                       Foreground="{DynamicResource GlyphBrush}"
+                       Opacity="0.55"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <!-- Background is set from code to an ImageBrush so the image follows the rounded corners. -->
+        <Border x:Name="ImageBorder"
+                CornerRadius="{Binding CornerRadius, ElementName=Root}"
+                RenderOptions.BitmapScalingMode="HighQuality" />
+    </Grid>
+</UserControl>

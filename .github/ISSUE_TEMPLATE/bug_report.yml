@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a problem with Game Collections
+labels: ['bug']
+body:
+  - type: input
+    attributes:
+      label: Extension version
+      description: Shown in Playnite under Add-ons → Extensions → Game Collections.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Playnite version
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs
+      description: |
+        Attach `playnite.log` and `extensions.log`. In Playnite, open the main menu → About Playnite → "Open logs folder"
+        (or `%AppData%\Playnite` for an installed copy, the Playnite folder for a portable one).
+    validations:
+      required: true

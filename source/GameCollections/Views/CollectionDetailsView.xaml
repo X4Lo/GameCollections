@@ -1,0 +1,163 @@
+<UserControl x:Class="GameCollections.Views.CollectionDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:GameCollections.Views"
+             xmlns:vm="clr-namespace:GameCollections.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:CollectionDetailsViewModel}"
+             d:DesignHeight="700" d:DesignWidth="900">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/GameCollections;component/Views/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <ContextMenu x:Key="GameContextMenu" x:Shared="False">
+                <MenuItem Header="{Binding PlayActionText}" Command="{Binding PlayCommand}" FontWeight="SemiBold" InputGestureText="Enter" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_ShowInLibrary}" Command="{Binding ShowInLibraryCommand}" />
+                <Separator />
+                <MenuItem Header="{DynamicResource LOCGameCollections_RemoveFromCollection}" Command="{Binding RemoveCommand}" InputGestureText="Del" />
+            </ContextMenu>
+
+            <Style x:Key="GameContainerStyle" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                <Setter Property="ContextMenu" Value="{StaticResource GameContextMenu}" />
+                <Setter Property="Margin" Value="0,0,8,8" />
+                <Setter Property="Padding" Value="6" />
+                <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                <Setter Property="ToolTip" Value="{Binding Name}" />
+                <EventSetter Event="MouseDoubleClick" Handler="GameItem_MouseDoubleClick" />
+                <EventSetter Event="Loaded" Handler="GameItem_Loaded" />
+            </Style>
+
+            <DataTemplate x:Key="GameTemplate" DataType="{x:Type vm:CollectionGameViewModel}">
+                <StackPanel Width="130">
+                    <Grid Width="130" Height="195">
+                        <local:PosterImage GlyphSize="40" Glyph="&#xea30;" Source="{Binding Cover}" />
+                        <!-- Dim games that are not installed, as Playnite's own grid does. -->
+                        <Border Background="#80000000" CornerRadius="4" IsHitTestVisible="False"
+                                Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVisibility}}" />
+                    </Grid>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource GcText}"
+                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                               Margin="0,6,0,0" />
+                </StackPanel>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <DockPanel Margin="20,10,20,0">
+        <!-- Back navigation -->
+        <Button DockPanel.Dock="Top" HorizontalAlignment="Left" Style="{StaticResource GcButton}"
+                Command="{Binding BackCommand}"
+                AutomationProperties.Name="{DynamicResource LOCGameCollections_BackToCollections}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xea5c;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
+                <TextBlock Text="{DynamicResource LOCGameCollections_BackToCollections}" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Collection header -->
+        <Grid DockPanel.Dock="Top" Margin="0,15,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <local:PosterImage Width="140" Height="210" GlyphSize="52" Source="{Binding Header.Poster}" VerticalAlignment="Top" />
+            <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                <TextBlock Text="{Binding Header.Title}" Style="{StaticResource GcPageTitleText}" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBlock Text="&#xf000;" Style="{StaticResource GcGlyph}"
+                               Foreground="{DynamicResource GlyphBrush}" Margin="0,0,5,0" />
+                    <TextBlock Text="{Binding Header.RatingText}" Style="{StaticResource GcText}" />
+                    <TextBlock Text="•" Style="{StaticResource GcMutedText}" Margin="10,0" />
+                    <TextBlock Text="{Binding Header.GameCountText}" Style="{StaticResource GcMutedText}" />
+                </StackPanel>
+                <ScrollViewer MaxHeight="96" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding Header.HasDescription, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding Header.Description}" Style="{StaticResource GcMutedText}" TextWrapping="Wrap" />
+                </ScrollViewer>
+                <WrapPanel Orientation="Horizontal" Margin="0,14,0,0">
+                    <Button Style="{StaticResource GcButton}" Command="{Binding Header.EditCommand}" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xec55;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
+                            <TextBlock Text="{DynamicResource LOCGameCollections_EditCollection}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource GcButton}" Command="{Binding ShowAllInLibraryCommand}" Margin="0,0,8,0"
+                            ToolTip="{DynamicResource LOCGameCollections_ShowAllInLibraryTooltip}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xef24;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
+                            <TextBlock Text="{DynamicResource LOCGameCollections_ShowAllInLibrary}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource GcButton}" Command="{Binding Header.DeleteCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xec53;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
+                            <TextBlock Text="{DynamicResource LOCGameCollections_DeleteCollection}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Toolbar: search, sort, filter -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" LastChildFill="False">
+            <local:SearchBox DockPanel.Dock="Left" Width="240" Height="32"
+                             Text="{Binding SearchText}"
+                             Placeholder="{DynamicResource LOCGameCollections_SearchGames}" />
+            <TextBlock DockPanel.Dock="Left" Text="{DynamicResource LOCGameCollections_SortBy}" Style="{StaticResource GcText}"
+                       VerticalAlignment="Center" Margin="16,0,8,0" />
+            <ComboBox DockPanel.Dock="Left" MinWidth="150" VerticalAlignment="Center"
+                      ItemsSource="{Binding SortOptions}"
+                      DisplayMemberPath="Label"
+                      SelectedValuePath="Field"
+                      SelectedValue="{Binding SortField}"
+                      AutomationProperties.Name="{DynamicResource LOCGameCollections_SortBy}" />
+            <Button DockPanel.Dock="Left" Style="{StaticResource GcIconButton}" Height="32" Margin="5,0,0,0"
+                    Content="{Binding SortDirectionGlyph}"
+                    Command="{Binding ToggleSortDirectionCommand}"
+                    ToolTip="{Binding SortDirectionTooltip}"
+                    AutomationProperties.Name="{Binding SortDirectionTooltip}" />
+            <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="16,0,0,0"
+                      IsChecked="{Binding InstalledOnly}"
+                      Content="{DynamicResource LOCGameCollections_InstalledOnly}" />
+            <TextBlock DockPanel.Dock="Right" Text="{Binding VisibleCountText}" Style="{StaticResource GcMutedText}"
+                       VerticalAlignment="Center" Margin="10,0,0,0" />
+        </DockPanel>
+
+        <Grid>
+            <ListBox x:Name="GamesList"
+                     Style="{StaticResource GcPlainListBox}"
+                     ItemsSource="{Binding GamesView}"
+                     IsSynchronizedWithCurrentItem="False"
+                     SelectionMode="Extended"
+                     ItemTemplate="{StaticResource GameTemplate}"
+                     ItemContainerStyle="{StaticResource GameContainerStyle}"
+                     ScrollViewer.CanContentScroll="False"
+                     KeyDown="GamesList_KeyDown"
+                     SizeChanged="GamesList_SizeChanged"
+                     AutomationProperties.Name="{Binding Header.Title}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,10" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <!-- Empty collection -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0" MaxWidth="420"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{DynamicResource LOCGameCollections_CollectionEmptyTitle}" Style="{StaticResource GcText}"
+                           FontSize="{DynamicResource FontSizeLarge}" HorizontalAlignment="Center" />
+                <TextBlock Text="{DynamicResource LOCGameCollections_CollectionEmptyDescription}" Style="{StaticResource GcMutedText}"
+                           TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0" />
+            </StackPanel>
+
+            <TextBlock Text="{DynamicResource LOCGameCollections_NoGamesMatch}" Style="{StaticResource GcMutedText}"
+                       HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0"
+                       Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
+    </DockPanel>
+</UserControl>

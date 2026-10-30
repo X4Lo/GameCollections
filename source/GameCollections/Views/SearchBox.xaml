@@ -1,0 +1,35 @@
+<UserControl x:Class="GameCollections.Views.SearchBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Focusable="False">
+    <UserControl.Resources>
+        <ResourceDictionary Source="/GameCollections;component/Views/Styles.xaml" />
+    </UserControl.Resources>
+    <Grid>
+        <TextBox x:Name="InputBox"
+                 Padding="26,0,26,0"
+                 VerticalContentAlignment="Center"
+                 Text="{Binding Text, ElementName=Root, UpdateSourceTrigger=PropertyChanged}"
+                 AutomationProperties.Name="{Binding Placeholder, ElementName=Root}" />
+        <TextBlock Text="&#xec82;" Style="{StaticResource GcGlyph}"
+                   Foreground="{DynamicResource TextBrushDarker}"
+                   HorizontalAlignment="Left" Margin="8,0,0,0"
+                   IsHitTestVisible="False" />
+        <TextBlock Text="{Binding Placeholder, ElementName=Root}"
+                   Style="{StaticResource GcMutedText}"
+                   VerticalAlignment="Center" Margin="28,0,28,0"
+                   TextTrimming="CharacterEllipsis"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding Text, ElementName=Root, Converter={StaticResource NoValueToVisibility}}" />
+        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                Margin="0,0,3,0" Padding="4,2"
+                Background="Transparent" BorderThickness="0"
+                Focusable="False" Cursor="Hand"
+                ToolTip="{DynamicResource LOCGameCollections_ClearSearch}"
+                Click="ClearButton_Click"
+                Visibility="{Binding Text, ElementName=Root, Converter={StaticResource HasValueToVisibility}}">
+            <TextBlock Text="&#xeee4;" Style="{StaticResource GcGlyph}" FontSize="12" />
+        </Button>
+    </Grid>
+</UserControl>

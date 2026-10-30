@@ -1,0 +1,94 @@
+<UserControl x:Class="GameCollections.Views.EditCollectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:GameCollections.Views"
+             xmlns:vm="clr-namespace:GameCollections.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:EditCollectionViewModel}"
+             d:DesignHeight="440" d:DesignWidth="620">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/GameCollections;component/Views/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <DockPanel Margin="20">
+        <!-- Footer -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,15,0,0">
+            <Button DockPanel.Dock="Right" MinWidth="90" Margin="8,0,0,0"
+                    IsCancel="True"
+                    Command="{Binding CancelCommand}"
+                    Content="{DynamicResource LOCGameCollections_Cancel}" />
+            <Button DockPanel.Dock="Right" MinWidth="90"
+                    IsDefault="True"
+                    Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding CanSave}"
+                    Content="{DynamicResource LOCGameCollections_Save}" />
+            <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource GcErrorText}"
+                       VerticalAlignment="Center" Margin="0,0,10,0" />
+        </DockPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Poster -->
+                <StackPanel Width="160">
+                    <local:PosterImage Width="160" Height="240" GlyphSize="56" Source="{Binding PosterPreview}" />
+                    <TextBlock Text="{Binding PosterHint}" Style="{StaticResource GcMutedText}"
+                               FontSize="{DynamicResource FontSizeSmall}"
+                               TextWrapping="Wrap" Margin="0,6,0,0" />
+                    <Button Style="{StaticResource GcButton}" Margin="0,8,0,0" HorizontalAlignment="Stretch"
+                            Command="{Binding BrowsePosterCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xef4b;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
+                            <TextBlock Text="{DynamicResource LOCGameCollections_ChoosePoster}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource GcButton}" Margin="0,6,0,0" HorizontalAlignment="Stretch"
+                            Command="{Binding RemovePosterCommand}"
+                            IsEnabled="{Binding HasCustomPoster}"
+                            Content="{DynamicResource LOCGameCollections_RemovePoster}" />
+                </StackPanel>
+
+                <!-- Fields -->
+                <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                    <TextBlock Text="{DynamicResource LOCGameCollections_FieldTitle}" Style="{StaticResource GcText}" Margin="0,0,0,5" />
+                    <TextBox x:Name="TitleInput"
+                             Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="{Binding MaxTitleLength, Mode=OneTime}"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_FieldTitle}" />
+                    <TextBlock Text="{Binding TitleError}" Style="{StaticResource GcErrorText}" Margin="0,4,0,0"
+                               Visibility="{Binding TitleError, Converter={StaticResource HasValueToVisibility}}" />
+
+                    <TextBlock Text="{DynamicResource LOCGameCollections_FieldDescription}" Style="{StaticResource GcSectionLabel}" />
+                    <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="{Binding MaxDescriptionLength, Mode=OneTime}"
+                             AcceptsReturn="True" TextWrapping="Wrap"
+                             Height="110" VerticalContentAlignment="Top"
+                             VerticalScrollBarVisibility="Auto"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_FieldDescription}" />
+
+                    <TextBlock Text="{DynamicResource LOCGameCollections_FieldRating}" Style="{StaticResource GcSectionLabel}" />
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding RatingText}" Style="{StaticResource GcText}"
+                                   MinWidth="50" TextAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0" />
+                        <Slider Minimum="0" Maximum="10"
+                                TickFrequency="0.5" IsSnapToTickEnabled="True" TickPlacement="BottomRight"
+                                SmallChange="0.5" LargeChange="1"
+                                VerticalAlignment="Center"
+                                Value="{Binding Rating}"
+                                AutomationProperties.Name="{DynamicResource LOCGameCollections_FieldRating}" />
+                    </DockPanel>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

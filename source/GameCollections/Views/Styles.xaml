@@ -1,0 +1,67 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:GameCollections.Views">
+    <!--
+        Shared styles. Brushes, fonts and sizes come from the active Playnite theme through
+        DynamicResource, so light and dark themes are both followed.
+    -->
+    <local:HasValueToVisibilityConverter x:Key="HasValueToVisibility" />
+    <local:HasValueToVisibilityConverter x:Key="NoValueToVisibility" Invert="True" />
+    <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <local:BoolToVisibilityConverter x:Key="InverseBoolToVisibility" Invert="True" />
+
+    <Style x:Key="GcText" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}" />
+
+    <Style x:Key="GcMutedText" TargetType="TextBlock" BasedOn="{StaticResource GcText}">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrushDarker}" />
+    </Style>
+
+    <Style x:Key="GcPageTitleText" TargetType="TextBlock" BasedOn="{StaticResource GcText}">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeLargest}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="GcItemTitleText" TargetType="TextBlock" BasedOn="{StaticResource GcText}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style x:Key="GcSectionLabel" TargetType="TextBlock" BasedOn="{StaticResource GcText}">
+        <Setter Property="Margin" Value="0,12,0,5" />
+    </Style>
+
+    <Style x:Key="GcErrorText" TargetType="TextBlock" BasedOn="{StaticResource GcText}">
+        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="GcGlyph" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource FontIcoFont}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Button holding an icon glyph and an optional label. -->
+    <Style x:Key="GcButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="GcIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontIcoFont}" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <!-- ListBox without its own border/background so it blends into the page. -->
+    <Style x:Key="GcPlainListBox" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    </Style>
+</ResourceDictionary>

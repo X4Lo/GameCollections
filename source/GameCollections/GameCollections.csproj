@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <RootNamespace>GameCollections</RootNamespace>
+    <AssemblyName>GameCollections</AssemblyName>
+    <LangVersion>7.3</LangVersion>
+    <Version>1.0.0</Version>
+    <Product>Game Collections</Product>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Playnite.SDK.dll is supplied by Playnite at runtime, so it is not copied to the output. -->
+    <PackageReference Include="PlayniteSDK" Version="6.11.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Localization files are loaded by Playnite from the plugin folder, not compiled into the assembly. -->
+    <Page Remove="Localization\*.xaml" />
+    <None Include="Localization\*.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="extension.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Creates an installable .pext package (a zip of the output folder) in <repo>\dist after Release builds.
+       The file name follows Playnite Toolbox's convention: <extension Id>_<version with underscores>.pext -->
+  <Target Name="PackPext" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PextDirectory>$(MSBuildProjectDirectory)\..\..\dist</PextDirectory>
+      <PextPath>$(PextDirectory)\GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54_$(Version.Replace('.', '_')).pext</PextPath>
+    </PropertyGroup>
+    <MakeDir Directories="$(PextDirectory)" />
+    <Delete Files="$(PextPath)" />
+    <ZipDirectory SourceDirectory="$(OutDir)" DestinationFile="$(PextPath)" Overwrite="true" />
+  </Target>
+
+</Project>

@@ -1,0 +1,14 @@
+Id: GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54
+Name: Game Collections
+Author: X4Lo
+Version: 1.0.0
+Module: GameCollections.dll
+Type: GenericPlugin
+Icon: icon.png
+Links:
+    - Name: GitHub
+      Url: https://github.com/X4Lo/GameCollections
+    - Name: Issues Tracker
+      Url: https://github.com/X4Lo/GameCollections/issues
+    - Name: User Guide
+      Url: https://github.com/X4Lo/GameCollections/blob/main/docs/user-guide.md

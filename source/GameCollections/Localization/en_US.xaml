@@ -1,0 +1,92 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="LOCGameCollections_PluginName">Game Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_SidebarTitle">Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_MenuAddToCollection">Add to Collection…</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingsEmpty">There are no settings for Game Collections yet.</sys:String>
+
+    <!-- Collections page -->
+    <sys:String x:Key="LOCGameCollections_PageTitle">Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_SearchCollections">Search collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_CreateCollection">Create Collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_SwitchToListView">Switch to list view</sys:String>
+    <sys:String x:Key="LOCGameCollections_SwitchToGridView">Switch to grid view</sys:String>
+    <sys:String x:Key="LOCGameCollections_EmptyTitle">No collections yet</sys:String>
+    <sys:String x:Key="LOCGameCollections_EmptyDescription">Create a collection here, or right-click a game in your library and choose "Add to Collection".</sys:String>
+    <sys:String x:Key="LOCGameCollections_NoCollectionsMatch">No collections match "{0}".</sys:String>
+    <sys:String x:Key="LOCGameCollections_Open">Open</sys:String>
+    <sys:String x:Key="LOCGameCollections_Edit">Edit</sys:String>
+    <sys:String x:Key="LOCGameCollections_Delete">Delete</sys:String>
+    <sys:String x:Key="LOCGameCollections_CollectionCountSingle">1 collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_CollectionCountPlural">{0} collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_GameCountSingle">1 game</sys:String>
+    <sys:String x:Key="LOCGameCollections_GameCountPlural">{0} games</sys:String>
+    <sys:String x:Key="LOCGameCollections_FilteredGameCount">{0} of {1} games</sys:String>
+    <sys:String x:Key="LOCGameCollections_DeleteConfirmTitle">Delete collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_DeleteConfirmMessage">Delete the collection "{0}"?&#x0a;&#x0a;The games in it will stay in your Playnite library.</sys:String>
+    <sys:String x:Key="LOCGameCollections_UntitledCollection">Untitled collection</sys:String>
+
+    <!-- Collection page -->
+    <sys:String x:Key="LOCGameCollections_BackToCollections">Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_EditCollection">Edit</sys:String>
+    <sys:String x:Key="LOCGameCollections_DeleteCollection">Delete</sys:String>
+    <sys:String x:Key="LOCGameCollections_ShowAllInLibrary">Select in library</sys:String>
+    <sys:String x:Key="LOCGameCollections_ShowAllInLibraryTooltip">Switch to the library and select every game in this collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_SearchGames">Search games</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortBy">Sort by</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortCollectionOrder">Collection order</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortName">Name</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortReleaseDate">Release date</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortLastPlayed">Last played</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortPlaytime">Time played</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortDateAdded">Date added to library</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortAscending">Ascending</sys:String>
+    <sys:String x:Key="LOCGameCollections_SortDescending">Descending</sys:String>
+    <sys:String x:Key="LOCGameCollections_InstalledOnly">Installed only</sys:String>
+    <sys:String x:Key="LOCGameCollections_Play">Play</sys:String>
+    <sys:String x:Key="LOCGameCollections_Install">Install</sys:String>
+    <sys:String x:Key="LOCGameCollections_ShowInLibrary">Show in library</sys:String>
+    <sys:String x:Key="LOCGameCollections_RemoveFromCollection">Remove from collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_CollectionEmptyTitle">This collection is empty</sys:String>
+    <sys:String x:Key="LOCGameCollections_CollectionEmptyDescription">Right-click a game in your library and choose "Add to Collection" to add it here.</sys:String>
+    <sys:String x:Key="LOCGameCollections_NoGamesMatch">No games match the current search or filter.</sys:String>
+
+    <!-- Add to Collection dialog -->
+    <sys:String x:Key="LOCGameCollections_AddToCollectionWindowTitle">Add to Collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_AddToCollectionHeaderSingle">Choose the collections for "{0}"</sys:String>
+    <sys:String x:Key="LOCGameCollections_AddToCollectionHeaderMultiple">Choose the collections for {0} selected games</sys:String>
+    <sys:String x:Key="LOCGameCollections_SearchOrCreate">Search or create a collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_CreateCollectionNamed">Create collection "{0}"</sys:String>
+    <sys:String x:Key="LOCGameCollections_NewCollectionBadge">New</sys:String>
+    <sys:String x:Key="LOCGameCollections_AddDialogEmpty">You don't have any collections yet. Type a name above to create one.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ClearSearch">Clear</sys:String>
+
+    <!-- Create / edit dialog -->
+    <sys:String x:Key="LOCGameCollections_CreateCollectionWindowTitle">Create Collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_EditCollectionWindowTitle">Edit Collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_FieldTitle">Title</sys:String>
+    <sys:String x:Key="LOCGameCollections_FieldDescription">Description</sys:String>
+    <sys:String x:Key="LOCGameCollections_FieldRating">Rating</sys:String>
+    <sys:String x:Key="LOCGameCollections_ChoosePoster">Choose poster…</sys:String>
+    <sys:String x:Key="LOCGameCollections_RemovePoster">Remove custom poster</sys:String>
+    <sys:String x:Key="LOCGameCollections_PosterHintCustom">Custom poster</sys:String>
+    <sys:String x:Key="LOCGameCollections_PosterHintAutomatic">Using the cover of the first game in the collection</sys:String>
+    <sys:String x:Key="LOCGameCollections_PosterHintPlaceholder">No poster yet. The first game's cover will be used once games are added.</sys:String>
+    <sys:String x:Key="LOCGameCollections_Save">Save</sys:String>
+    <sys:String x:Key="LOCGameCollections_Cancel">Cancel</sys:String>
+
+    <!-- Errors and warnings -->
+    <sys:String x:Key="LOCGameCollections_ErrorTitleRequired">A title is required.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorTitleTooLong">The title can be at most {0} characters long.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorTitleDuplicate">A collection named "{0}" already exists.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorCollectionNotFound">The collection no longer exists.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorPosterFormat">Unsupported image format. Use PNG, JPG, BMP, GIF or TIFF.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorPosterMissing">The selected poster file could not be found.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorPosterUnreadable">The selected file could not be read as an image.</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorSaveCollection">The collection could not be saved: {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorSaveFailed">Game Collections could not save your collections: {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_ErrorLoadFailed">Game Collections could not load your collections: {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_WarningRestoredFromBackup">Game Collections could not read its data file and restored your collections from the most recent backup.</sys:String>
+    <sys:String x:Key="LOCGameCollections_WarningDataUnreadable">Game Collections could not read its data file. The unreadable file was kept at "{0}".</sys:String>
+</ResourceDictionary>

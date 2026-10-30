@@ -1,0 +1,88 @@
+<UserControl x:Class="GameCollections.Views.AddToCollectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:GameCollections.Views"
+             xmlns:vm="clr-namespace:GameCollections.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AddToCollectionViewModel}"
+             d:DesignHeight="520" d:DesignWidth="440">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/GameCollections;component/Views/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <DockPanel Margin="15">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding HeaderText}" Style="{StaticResource GcText}"
+                   FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+        <local:SearchBox x:Name="SearchInput" DockPanel.Dock="Top" Height="32"
+                         Text="{Binding SearchText}"
+                         Placeholder="{DynamicResource LOCGameCollections_SearchOrCreate}" />
+
+        <Button DockPanel.Dock="Top" Style="{StaticResource GcButton}" Margin="0,8,0,0"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                Command="{Binding CreateFromSearchCommand}"
+                Visibility="{Binding CanCreateFromSearch, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xefc2;" Style="{StaticResource GcGlyph}" Margin="0,0,8,0" />
+                <TextBlock Text="{Binding CreateButtonText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </Button>
+
+        <!-- Footer -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" MinWidth="90" Margin="8,0,0,0"
+                    IsCancel="True"
+                    Command="{Binding CancelCommand}"
+                    Content="{DynamicResource LOCGameCollections_Cancel}" />
+            <Button DockPanel.Dock="Right" MinWidth="90"
+                    IsDefault="True"
+                    Command="{Binding SaveCommand}"
+                    Content="{DynamicResource LOCGameCollections_Save}" />
+        </DockPanel>
+
+        <Grid Margin="0,10,0,0">
+            <ListBox x:Name="CollectionsList"
+                     ItemsSource="{Binding ItemsView}"
+                     SelectedItem="{Binding SelectedItem}"
+                     IsSynchronizedWithCurrentItem="False"
+                     HorizontalContentAlignment="Stretch"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     PreviewKeyDown="CollectionsList_PreviewKeyDown"
+                     AutomationProperties.Name="{DynamicResource LOCGameCollections_PageTitle}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:CollectionToggleItem}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding GameCountText}" Style="{StaticResource GcMutedText}"
+                                       VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <CheckBox IsChecked="{Binding IsChecked}"
+                                      IsThreeState="{Binding IsThreeState}"
+                                      VerticalContentAlignment="Center"
+                                      Focusable="False"
+                                      AutomationProperties.Name="{Binding Title}">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </CheckBox>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- No collections exist yet -->
+            <TextBlock Text="{DynamicResource LOCGameCollections_AddDialogEmpty}" Style="{StaticResource GcMutedText}"
+                       TextWrapping="Wrap" TextAlignment="Center"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
+                       Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}}" />
+
+            <!-- Search matched nothing -->
+            <TextBlock Text="{Binding NoResultsText}" Style="{StaticResource GcMutedText}"
+                       TextWrapping="Wrap" TextAlignment="Center"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
+                       Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
+    </DockPanel>
+</UserControl>
