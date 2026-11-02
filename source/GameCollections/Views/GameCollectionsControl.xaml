@@ -1,0 +1,50 @@
+<controls:PluginUserControl x:Class="GameCollections.Views.GameCollectionsControl"
+                            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                            xmlns:controls="clr-namespace:Playnite.SDK.Controls;assembly=Playnite.SDK"
+                            xmlns:local="clr-namespace:GameCollections.Views"
+                            mc:Ignorable="d"
+                            d:DesignHeight="170" d:DesignWidth="500">
+    <controls:PluginUserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/GameCollections;component/Views/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </controls:PluginUserControl.Resources>
+
+    <StackPanel>
+        <TextBlock Text="{DynamicResource LOCGameCollections_DetailsHeader}" Style="{StaticResource GcItemTitleText}" Margin="0,0,0,6" />
+        <ItemsControl x:Name="ItemsList" Focusable="False">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type local:DetailsCollectionItem}">
+                    <Button Margin="0,0,8,8" Padding="4"
+                            Command="{Binding OpenCommand}"
+                            ToolTip="{Binding Title}"
+                            AutomationProperties.Name="{Binding Title}">
+                        <StackPanel Width="84">
+                            <Grid Width="84" Height="126">
+                                <local:PosterImage GlyphSize="30" CornerRadius="3" Source="{Binding Poster}" />
+                                <Border Style="{StaticResource GcBadge}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="3"
+                                        Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource GcText}"
+                                       FontSize="{DynamicResource FontSizeSmall}"
+                                       TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</controls:PluginUserControl>

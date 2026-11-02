@@ -32,7 +32,6 @@ namespace GameCollections.Services
     /// </summary>
     public class CollectionRepository
     {
-        public const int CurrentSchemaVersion = 1;
         private const string DataFileName = "collections.json";
 
         private static readonly ILogger logger = LogManager.GetLogger();
@@ -59,16 +58,16 @@ namespace GameCollections.Services
             string preservedCopy = null;
             if (File.Exists(filePath))
             {
-                if (TryRead(filePath, out var collections))
+                if (TryRead(filePath, out var collections, out var migration))
                 {
-                    return new RepositoryLoadResult(collections, null);
+                    return new RepositoryLoadResult(collections, FinishMigration(collections, migration));
                 }
 
                 // Move the unreadable file aside so the next save cannot overwrite it.
                 preservedCopy = PreserveUnreadableFile(filePath);
             }
 
-            if (File.Exists(backupPath) && TryRead(backupPath, out var backupCollections))
+            if (File.Exists(backupPath) && TryRead(backupPath, out var backupCollections, out _))
             {
                 logger.Warn("Collections data file was unreadable, restored from backup.");
                 return new RepositoryLoadResult(backupCollections, Loc.Get("LOCGameCollections_WarningRestoredFromBackup"));
@@ -84,7 +83,7 @@ namespace GameCollections.Services
             Directory.CreateDirectory(dataDirectory);
             var payload = new CollectionsDataFile
             {
-                SchemaVersion = CurrentSchemaVersion,
+                SchemaVersion = CollectionsDataMigrator.CurrentVersion,
                 Collections = collections.ToList()
             };
 
@@ -116,22 +115,58 @@ namespace GameCollections.Services
             }
         }
 
-        private static bool TryRead(string path, out List<GameCollection> collections)
+        /// <summary>
+        /// Keeps a copy of the file as it was before a migration or from a newer version, and saves the migrated
+        /// data. Returns a warning for the user, or null. A failed save isn't fatal: the data is loaded, and
+        /// the file is simply migrated again next time.
+        /// </summary>
+        private string FinishMigration(List<GameCollection> collections, DataMigrationResult migration)
+        {
+            if (!migration.WasMigrated && !migration.IsNewerThanSupported)
+            {
+                return null;
+            }
+
+            var copyPath = $"{filePath}.v{migration.FromVersion}.bak";
+            try
+            {
+                if (!File.Exists(copyPath))
+                {
+                    File.Copy(filePath, copyPath);
+                }
+
+                if (migration.WasMigrated)
+                {
+                    Save(collections);
+                    logger.Info($"Migrated collections data from version {migration.FromVersion} to {CollectionsDataMigrator.CurrentVersion}.");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, "Failed to finish migrating the collections data file.");
+            }
+
+            return migration.IsNewerThanSupported ? Loc.Format("LOCGameCollections_WarningNewerData", copyPath) : null;
+        }
+
+        private static bool TryRead(string path, out List<GameCollection> collections, out DataMigrationResult migration)
         {
             collections = null;
+            migration = null;
             try
             {
                 var text = File.ReadAllText(path, Encoding.UTF8);
-                var data = Serialization.FromJson<CollectionsDataFile>(text);
+                migration = CollectionsDataMigrator.Migrate(text);
+                var data = Serialization.FromJson<CollectionsDataFile>(migration.Json);
                 if (data == null)
                 {
                     logger.Error($"Collections file {path} contained no data.");
                     return false;
                 }
 
-                if (data.SchemaVersion > CurrentSchemaVersion)
+                if (migration.IsNewerThanSupported)
                 {
-                    logger.Warn($"Collections file {path} was written by a newer plugin version ({data.SchemaVersion}).");
+                    logger.Warn($"Collections file {path} was written by a newer plugin version ({migration.FromVersion}).");
                 }
 
                 collections = Sanitize(data.Collections);
@@ -198,6 +233,7 @@ namespace GameCollections.Services
                     .Where(id => id != Guid.Empty)
                     .Distinct()
                     .ToList();
+                SanitizeRules(collection.Rules);
 
                 if (collection.CreatedAt == default(DateTime))
                 {
@@ -213,6 +249,20 @@ namespace GameCollections.Services
             }
 
             return result;
+        }
+
+        private static void SanitizeRules(DynamicRules rules)
+        {
+            if (rules == null)
+            {
+                return;
+            }
+
+            rules.Blocks = (rules.Blocks ?? new List<RuleBlock>()).Where(b => b != null).ToList();
+            foreach (var block in rules.Blocks)
+            {
+                block.Conditions = (block.Conditions ?? new List<RuleCondition>()).Where(c => c != null).ToList();
+            }
         }
     }
 }

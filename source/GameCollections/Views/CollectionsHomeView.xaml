@@ -41,7 +41,13 @@
             <!-- Grid card: fixed size so every card lines up regardless of its content. -->
             <DataTemplate x:Key="CardTemplate" DataType="{x:Type vm:CollectionCardViewModel}">
                 <StackPanel Width="170">
-                    <local:PosterImage Width="170" Height="255" GlyphSize="56" Source="{Binding Poster}" />
+                    <Grid Width="170" Height="255">
+                        <local:PosterImage GlyphSize="56" Source="{Binding Poster}" />
+                        <Border Style="{StaticResource GcBadge}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6"
+                            Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
+                    </Border>
+                    </Grid>
                     <TextBlock Text="{Binding Title}" ToolTip="{Binding Title}"
                                Style="{StaticResource GcItemTitleText}" Margin="0,8,0,0" />
                     <TextBlock Text="{Binding Description}" Style="{StaticResource GcMutedText}"
@@ -73,7 +79,13 @@
                     </Grid.ColumnDefinitions>
                     <local:PosterImage Width="48" Height="72" GlyphSize="22" CornerRadius="3" Source="{Binding Poster}" />
                     <StackPanel Grid.Column="1" Margin="14,0,10,0" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Title}" Style="{StaticResource GcItemTitleText}" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource GcItemTitleText}" />
+                            <Border Style="{StaticResource GcBadge}" Margin="8,0,0,0"
+                            Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
+                    </Border>
+                        </StackPanel>
                         <TextBlock Text="{Binding Description}" Style="{StaticResource GcMutedText}"
                                    TextTrimming="CharacterEllipsis" Margin="0,3,0,0"
                                    ToolTip="{Binding Description}"

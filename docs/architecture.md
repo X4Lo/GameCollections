@@ -1,5 +1,7 @@
 # Architecture and development
 
+For how it works in depth and how to change it, see the [developer guide](developer-guide.md).
+
 ## Repository layout
 
 ```
@@ -19,7 +21,7 @@ GameCollections/
 ├─ manifests/
 │  ├─ installer_manifest.yaml      release list Playnite reads for installs and updates
 │  └─ X4Lo_GameCollections.yaml    entry for the Playnite add-on database
-├─ docs/                           this documentation
+├─ docs/                           user guide, developer guide, theme integration
 ├─ screenshots/                    images for the README and add-on database
 ├─ .github/                        CI build/release workflow, issue template
 └─ dist/                           build output: the .pext package (git-ignored)
@@ -59,7 +61,14 @@ To try a build in Playnite, open the `.pext` file (Playnite installs it after a 
 | `GameCollectionsPlugin` | Wires everything together; game menu item, sidebar item, settings; reacts to library changes. |
 | `CollectionRepository` | Reads/writes `collections.json`. Atomic save (temp file + `File.Replace` with a `.bak`), recovery from the backup, data sanitising. |
 | `PosterStorage` | Copies custom posters into `Posters\`, deletes them, cleans up orphans. |
-| `CollectionManager` | All collection rules: validation, unique titles, create/update/delete, membership changes in one save, poster resolution, pruning deleted games. Raises `CollectionsChanged`. |
+| `CollectionManager` | All collection rules: validation, unique titles, create/update/delete, membership changes in one save, ordering, applying dynamic matches, the game-to-collections lookup, poster resolution, pruning deleted games. Raises `CollectionsChanged`. |
+| `CollectionsDataMigrator` | Upgrades `collections.json` step by step from its `SchemaVersion` to the current one. |
+| `SidebarNavigator` | Switches to the Collections section through Playnite's internals, as the SDK has no API for it. |
+| `RuleEngine` | Compiles dynamic rules into a predicate over games. Pure and thread-safe. |
+| `DynamicCollectionRefresher` | Decides when dynamic collections are evaluated: debounced game changes, delayed startup and library-update refreshes on a background thread, an hourly refresh for time-based rules. |
+| `RuleText` | Field and operator names, the values offered for each field, and rule summaries. |
+| `GameCollectionsControl` | Lists the selected game's collections. Themes can place it as a custom element. |
+| `DetailsViewIntegration` | For themes that don't place that element: inserts one instance below `PART_ElemDescription` (or `PART_ElemNotes`) in the visual tree. Stands aside if the theme has its own, skips `Grid` parents, and only searches the tree after a selection or view change, up to 3 times. |
 | `ImageLoader` | Asynchronous, downscaled (`DecodePixelWidth`), frozen, cached image decoding with limited concurrency. |
 | `DialogService` | Hosts the Add to Collection and create/edit dialogs in Playnite windows. |
 | `CollectionsRootViewModel` | Sidebar page navigation (home ↔ collection) and shared open/edit/delete actions. Lives for the whole session so view state is kept. |
@@ -70,7 +79,7 @@ To try a build in Playnite, open the `.pext` file (Playnite installs it after a 
 
 ```json
 {
-  "SchemaVersion": 1,
+  "SchemaVersion": 2,
   "Collections": [
     {
       "Id": "guid",
@@ -79,6 +88,7 @@ To try a build in Playnite, open the `.pext` file (Playnite installs it after a 
       "Rating": 8.5,
       "PosterFileName": "guid_ticks.png",
       "GameIds": ["game guid", "..."],
+      "Rules": null,
       "CreatedAt": "2026-10-30T12:00:00Z",
       "ModifiedAt": "2026-10-30T12:00:00Z"
     }
@@ -87,6 +97,16 @@ To try a build in Playnite, open the `.pext` file (Playnite installs it after a 
 ```
 
 Only game IDs are stored. Missing games are removed on startup and whenever Playnite deletes a game.
+
+### Dynamic collections
+
+`Rules` on a collection makes it dynamic (null means manual), and `GameIds` caches its latest matches. Pages and the
+game details therefore never search the library. Rules store IDs rather than names, so renaming a tag keeps them
+working. Enums are stored as numbers, so existing values must not be renumbered.
+
+Evaluation only reads in-memory game fields. A change to some games tests only those games, and full searches run on
+a background thread and are discarded if the rules were edited meanwhile. In a synthetic test, a full search of 20
+collections over 20,000 games took under a second. The data file is only written when membership really changed.
 
 ### Performance
 

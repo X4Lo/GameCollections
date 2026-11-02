@@ -20,6 +20,13 @@ namespace GameCollections.ViewModels
 
         public CollectionsHomeViewModel Home { get; }
 
+        private CollectionDetailsViewModel windowPage;
+
+        /// <summary>
+        /// Brings the sidebar view to the front; supplied by the plugin, which owns the sidebar item.
+        /// </summary>
+        public Action<Guid> SwitchToSidebarView { get; set; }
+
         private object currentPage;
         public object CurrentPage { get => currentPage; private set => SetValue(ref currentPage, value); }
 
@@ -50,6 +57,36 @@ namespace GameCollections.ViewModels
                 Home.SelectedCard = card;
                 CurrentPage = new CollectionDetailsViewModel(playniteApi, manager, this, card);
             }
+        }
+
+        /// <summary>
+        /// Opens the collection's page in its own window, for places outside the sidebar view.
+        /// </summary>
+        public void OpenCollectionInWindow(Guid id)
+        {
+            var card = Home.GetCard(id);
+            if (card != null)
+            {
+                windowPage = new CollectionDetailsViewModel(playniteApi, manager, this, card);
+                try
+                {
+                    dialogs.ShowCollectionPage(windowPage);
+                }
+                finally
+                {
+                    windowPage = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Closes the window showing the collection and goes to its page in the sidebar view.
+        /// </summary>
+        public void ShowInCollectionsSection(Guid id)
+        {
+            OpenCollection(id);
+            windowPage?.CloseWindow?.Invoke();
+            SwitchToSidebarView?.Invoke(id);
         }
 
         public void CreateCollection()
@@ -94,6 +131,7 @@ namespace GameCollections.ViewModels
         {
             Home.OnGamesUpdated(gameIds);
             (CurrentPage as CollectionDetailsViewModel)?.OnGamesUpdated(gameIds);
+            windowPage?.OnGamesUpdated(gameIds);
         }
 
         private void OnCollectionsChanged(object sender, CollectionsChangedEventArgs e)
@@ -108,6 +146,18 @@ namespace GameCollections.ViewModels
                 else if (e.ChangedIds == null || e.ChangedIds.Contains(details.CollectionId))
                 {
                     details.Reload();
+                }
+            }
+
+            if (windowPage != null)
+            {
+                if (manager.GetCollection(windowPage.CollectionId) == null)
+                {
+                    windowPage.CloseWindow?.Invoke();
+                }
+                else if (e.ChangedIds == null || e.ChangedIds.Contains(windowPage.CollectionId))
+                {
+                    windowPage.Reload();
                 }
             }
         }

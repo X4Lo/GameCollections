@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace GameCollections.ViewModels
 {
@@ -84,6 +85,7 @@ namespace GameCollections.ViewModels
             {
                 root.GameSortField = value;
                 OnPropertyChanged();
+                RaiseReorderChanged();
                 ApplySort();
             }
         }
@@ -97,6 +99,7 @@ namespace GameCollections.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SortDirectionGlyph));
                 OnPropertyChanged(nameof(SortDirectionTooltip));
+                RaiseReorderChanged();
                 ApplySort();
             }
         }
@@ -115,6 +118,30 @@ namespace GameCollections.ViewModels
             }
         }
 
+        private bool isDynamic;
+        public bool IsDynamic { get => isDynamic; private set => SetValue(ref isDynamic, value); }
+
+        public bool CanRemove => !isDynamic;
+
+        private string rulesSummary;
+        public string RulesSummary { get => rulesSummary; private set => SetValue(ref rulesSummary, value); }
+
+        public string EmptyTitle => Loc.Get(isDynamic ? "LOCGameCollections_DynamicEmptyTitle" : "LOCGameCollections_CollectionEmptyTitle");
+        public string EmptyDescription => Loc.Get(isDynamic ? "LOCGameCollections_DynamicEmptyDescription" : "LOCGameCollections_CollectionEmptyDescription");
+
+        /// <summary>
+        /// Games can only be reordered while the page shows the collection's own order;
+        /// in any other sort, a dragged game wouldn't stay where it was dropped.
+        /// </summary>
+        public bool CanReorder => SortField == GameSortField.CollectionOrder && !SortDescending;
+        public string ReorderHint => Loc.Get(CanReorder ? "LOCGameCollections_ReorderHint" : "LOCGameCollections_ReorderUnavailableHint");
+
+        /// <summary>
+        /// Set when the page is shown in its own window instead of the sidebar view.
+        /// </summary>
+        public Action CloseWindow { get; set; }
+        public bool IsInWindow => CloseWindow != null;
+
         public bool IsEmpty => Games.Count == 0;
         public bool HasNoResults => !IsEmpty && GamesView.Count == 0;
         public string VisibleCountText => GamesView.Count == Games.Count
@@ -126,6 +153,8 @@ namespace GameCollections.ViewModels
         public RelayCommand ShowAllInLibraryCommand { get; }
         public RelayCommand RemoveSelectedCommand { get; }
         public RelayCommand PlaySelectedCommand { get; }
+        public RelayCommand RefreshCommand { get; }
+        public RelayCommand OpenInCollectionsCommand { get; }
 
         public CollectionDetailsViewModel(IPlayniteAPI playniteApi, CollectionManager manager, CollectionsRootViewModel root, CollectionCardViewModel header)
         {
@@ -137,11 +166,23 @@ namespace GameCollections.ViewModels
             GamesView = new ListCollectionView(Games) { Filter = FilterGame };
             ApplySort();
 
-            BackCommand = new RelayCommand(root.ShowHome);
+            BackCommand = new RelayCommand(() =>
+            {
+                if (CloseWindow != null)
+                {
+                    CloseWindow();
+                }
+                else
+                {
+                    root.ShowHome();
+                }
+            });
             ToggleSortDirectionCommand = new RelayCommand(() => SortDescending = !SortDescending);
             ShowAllInLibraryCommand = new RelayCommand(ShowAllInLibrary);
             RemoveSelectedCommand = new RelayCommand(RemoveSelected);
             PlaySelectedCommand = new RelayCommand(PlaySelected);
+            RefreshCommand = new RelayCommand(() => manager.RefreshCollection(CollectionId));
+            OpenInCollectionsCommand = new RelayCommand(() => root.ShowInCollectionsSection(CollectionId));
 
             Reload();
         }
@@ -156,6 +197,14 @@ namespace GameCollections.ViewModels
             {
                 return;
             }
+
+            IsDynamic = collection.IsDynamic;
+            RulesSummary = collection.IsDynamic
+                ? Loc.Format("LOCGameCollections_RulesSummary", new RuleText(playniteApi).Describe(collection.Rules))
+                : null;
+            OnPropertyChanged(nameof(CanRemove));
+            OnPropertyChanged(nameof(EmptyTitle));
+            OnPropertyChanged(nameof(EmptyDescription));
 
             var games = manager.GetGames(collection);
             var currentIds = new HashSet<Guid>(games.Select(g => g.Id));
@@ -198,6 +247,7 @@ namespace GameCollections.ViewModels
                     return;
                 }
 
+                CloseWindow?.Invoke();
                 if (game.IsInstalled)
                 {
                     playniteApi.StartGame(game.Id);
@@ -222,6 +272,7 @@ namespace GameCollections.ViewModels
         {
             try
             {
+                CloseWindow?.Invoke();
                 playniteApi.MainView.SelectGame(tile.Id);
                 playniteApi.MainView.SwitchToLibraryView();
             }
@@ -237,9 +288,65 @@ namespace GameCollections.ViewModels
         /// </summary>
         public void RemoveGame(CollectionGameViewModel tile)
         {
-            var selected = SelectedGames?.Cast<CollectionGameViewModel>().ToList() ?? new List<CollectionGameViewModel>();
-            var targets = selected.Contains(tile) ? selected : new List<CollectionGameViewModel> { tile };
+            var targets = GetMoveTargets(tile);
             manager.RemoveGames(CollectionId, targets.Select(t => t.Id));
+        }
+
+        /// <summary>
+        /// Moves the games to just before or after another game. Dragging uses this directly.
+        /// </summary>
+        public void MoveGames(IEnumerable<Guid> gameIds, Guid anchorId, bool after)
+        {
+            if (CanReorder)
+            {
+                manager.MoveGames(CollectionId, gameIds, anchorId, after);
+            }
+        }
+
+        /// <summary>
+        /// Moves the tile, or the whole selection if the tile is part of it, past the neighbouring visible game.
+        /// </summary>
+        public void MoveOneStep(CollectionGameViewModel tile, bool later)
+        {
+            if (!CanReorder)
+            {
+                return;
+            }
+
+            var targets = GetMoveTargets(tile);
+            var visible = GamesView.Cast<CollectionGameViewModel>().ToList();
+            var indexes = targets.Select(t => visible.IndexOf(t)).Where(i => i >= 0).ToList();
+            if (indexes.Count == 0)
+            {
+                return;
+            }
+
+            var neighbour = later ? indexes.Max() + 1 : indexes.Min() - 1;
+            if (neighbour >= 0 && neighbour < visible.Count)
+            {
+                manager.MoveGames(CollectionId, targets.Select(t => t.Id), visible[neighbour].Id, later);
+            }
+        }
+
+        public void MoveToEdge(CollectionGameViewModel tile, bool toEnd)
+        {
+            if (CanReorder)
+            {
+                manager.MoveGames(CollectionId, GetMoveTargets(tile).Select(t => t.Id), null, toEnd);
+            }
+        }
+
+        private List<CollectionGameViewModel> GetMoveTargets(CollectionGameViewModel tile)
+        {
+            var selected = SelectedGames?.Cast<CollectionGameViewModel>().ToList() ?? new List<CollectionGameViewModel>();
+            return selected.Contains(tile) ? selected : new List<CollectionGameViewModel> { tile };
+        }
+
+        private void RaiseReorderChanged()
+        {
+            OnPropertyChanged(nameof(CanReorder));
+            OnPropertyChanged(nameof(ReorderHint));
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void RemoveSelected()

@@ -4,7 +4,6 @@
     <sys:String x:Key="LOCGameCollections_PluginName">Game Collections</sys:String>
     <sys:String x:Key="LOCGameCollections_SidebarTitle">Collections</sys:String>
     <sys:String x:Key="LOCGameCollections_MenuAddToCollection">Add to Collection…</sys:String>
-    <sys:String x:Key="LOCGameCollections_SettingsEmpty">There are no settings for Game Collections yet.</sys:String>
 
     <!-- Collections page -->
     <sys:String x:Key="LOCGameCollections_PageTitle">Collections</sys:String>
@@ -76,6 +75,97 @@
     <sys:String x:Key="LOCGameCollections_Save">Save</sys:String>
     <sys:String x:Key="LOCGameCollections_Cancel">Cancel</sys:String>
 
+    <!-- Dynamic collections -->
+    <sys:String x:Key="LOCGameCollections_CollectionType">Type</sys:String>
+    <sys:String x:Key="LOCGameCollections_TypeManual">Manual: you choose the games</sys:String>
+    <sys:String x:Key="LOCGameCollections_TypeDynamic">Dynamic: filled automatically by rules</sys:String>
+    <sys:String x:Key="LOCGameCollections_DynamicBadge">Dynamic</sys:String>
+    <sys:String x:Key="LOCGameCollections_WarningReplaceGames">Saving replaces this collection's current games with the games matching the rules.</sys:String>
+    <sys:String x:Key="LOCGameCollections_NoteKeepGames">Saving keeps the current games, but they will no longer update automatically.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RefreshNow">Refresh now</sys:String>
+    <sys:String x:Key="LOCGameCollections_RefreshNowTooltip">Check the whole library against the rules again</sys:String>
+    <sys:String x:Key="LOCGameCollections_RulesSummary">Rules: {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_DynamicEmptyTitle">No games match these rules</sys:String>
+    <sys:String x:Key="LOCGameCollections_DynamicEmptyDescription">Edit the collection to change its rules. It updates by itself when a game starts to match.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleBlockTitle">Block {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleBlockHint">A game must meet every condition in this block</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleAddCondition">Add condition</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleRemoveCondition">Remove condition</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleAddBlock">Add block</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleRemoveBlock">Remove block</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleJoinAnd">AND</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleJoinOr">OR</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOrderHint">Blocks are combined in order, from top to bottom. Hidden games are never included.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleAnd">and</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOr">or</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldLabel">Field</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorLabel">Condition</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleChooseValues">Choose…</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleChangeValues">Change…</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleSearchValues">Search</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleNoValues">There is nothing to choose from in your library.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleDateHint">YYYY, YYYY-MM or YYYY-MM-DD</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleErrorDate">Enter a date as YYYY, YYYY-MM or YYYY-MM-DD.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleErrorNumber">Enter a number of 0 or more.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleErrorRange">The second value must not be lower than the first.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RulePreviewIncomplete">Complete every condition to see the matching games.</sys:String>
+    <sys:String x:Key="LOCGameCollections_RulePreviewCount">Currently matches {0}</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleUnitDays">days</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleUnitHours">hours</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleUnitTimes">times</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleUnitScore">out of 100</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldName">Name</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldPlatform">Platform</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldGenre">Genres</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldDeveloper">Developers</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldPublisher">Publishers</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldCategory">Categories</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldFeature">Features</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldTag">Tags</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldSeries">Series</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldCompletionStatus">Completion status</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldReleaseDate">Release date</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldLastPlayed">Last played</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldUserScore">User score</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldCriticScore">Critic score</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldCommunityScore">Community score</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldTimePlayed">Time played</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleFieldPlayCount">Play count</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorContains">includes</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorNotContains">does not include</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorIncludesAny">includes any of</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorIncludesAll">includes all of</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorExcludes">includes none of</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorAtLeast">at least</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorAtMost">at most</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorBetween">between</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorBefore">before</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorAfter">after</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorInLastDays">in the last</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorOlderThanDays">older than</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorIsEmpty">is empty</sys:String>
+    <sys:String x:Key="LOCGameCollections_RuleOperatorNoDate">has no date</sys:String>
+
+    <!-- Manual order -->
+    <sys:String x:Key="LOCGameCollections_MoveToTop">Move to top</sys:String>
+    <sys:String x:Key="LOCGameCollections_MoveUp">Move earlier</sys:String>
+    <sys:String x:Key="LOCGameCollections_MoveDown">Move later</sys:String>
+    <sys:String x:Key="LOCGameCollections_MoveToBottom">Move to end</sys:String>
+    <sys:String x:Key="LOCGameCollections_ReorderHint">Drag games to reorder them</sys:String>
+    <sys:String x:Key="LOCGameCollections_ReorderUnavailableHint">To reorder, sort by Collection order, ascending</sys:String>
+
+    <!-- Game details and settings -->
+    <sys:String x:Key="LOCGameCollections_DetailsHeader">Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingShowDynamicInDetails">Display dynamic collections in details view</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingShowDynamicInDetailsHint">When off, game details only list manual collections.</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingAddListToAnyTheme">Show collections in details view</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingAddListToAnyThemeHint">Adds the list below the game description. Turn this off if it looks wrong in your theme.</sys:String>
+
+    <!-- Opening a collection from game details -->
+    <sys:String x:Key="LOCGameCollections_OpenInCollections">Open in Collections</sys:String>
+    <sys:String x:Key="LOCGameCollections_OpenInCollectionsTooltip">Go to this collection's page in the Collections section</sys:String>
+    <sys:String x:Key="LOCGameCollections_OpenCollectionsManually">"{0}" is open in Collections. Click Collections in the sidebar to see it.</sys:String>
+
     <!-- Errors and warnings -->
     <sys:String x:Key="LOCGameCollections_ErrorTitleRequired">A title is required.</sys:String>
     <sys:String x:Key="LOCGameCollections_ErrorTitleTooLong">The title can be at most {0} characters long.</sys:String>
@@ -88,5 +178,6 @@
     <sys:String x:Key="LOCGameCollections_ErrorSaveFailed">Game Collections could not save your collections: {0}</sys:String>
     <sys:String x:Key="LOCGameCollections_ErrorLoadFailed">Game Collections could not load your collections: {0}</sys:String>
     <sys:String x:Key="LOCGameCollections_WarningRestoredFromBackup">Game Collections could not read its data file and restored your collections from the most recent backup.</sys:String>
+    <sys:String x:Key="LOCGameCollections_WarningNewerData">Your collections were saved by a newer version of Game Collections. Update the extension to avoid losing data. A copy of the file was kept at "{0}".</sys:String>
     <sys:String x:Key="LOCGameCollections_WarningDataUnreadable">Game Collections could not read its data file. The unreadable file was kept at "{0}".</sys:String>
 </ResourceDictionary>

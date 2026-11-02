@@ -1,5 +1,15 @@
 AddonId: GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54
 Packages:
+  - Version: 1.1.0
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-11-02
+    PackageUrl: https://github.com/X4Lo/GameCollections/releases/download/v1.1.0/GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54_1_1_0.pext
+    Changelog:
+      - 'Added: Reorder games in a collection by dragging, from the right-click menu, or with Alt+arrow keys'
+      - 'Added: Dynamic collections, filled automatically by rules made of condition blocks combined with AND/OR'
+      - 'Added: List of the selected game''s collections in the game details view'
+      - 'Added: Settings to turn that list off, and to show or hide dynamic collections in it'
+      - 'Added: Automatic migrations of the data file between versions'
   - Version: 1.0.0
     RequiredApiVersion: 6.11.0
     ReleaseDate: 2026-10-30

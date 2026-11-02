@@ -111,7 +111,8 @@ namespace GameCollections.ViewModels
                 : Loc.Format("LOCGameCollections_AddToCollectionHeaderMultiple", games.Count);
 
             var gameIds = games.Select(g => g.Id).ToList();
-            foreach (var collection in manager.Collections)
+            // The games of a dynamic collection are decided by its rules, so it can't be chosen here.
+            foreach (var collection in manager.Collections.Where(c => !c.IsDynamic))
             {
                 var memberIds = new HashSet<Guid>(collection.GameIds);
                 var containedCount = gameIds.Count(memberIds.Contains);

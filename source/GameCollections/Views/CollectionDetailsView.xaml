@@ -18,7 +18,13 @@
                 <MenuItem Header="{Binding PlayActionText}" Command="{Binding PlayCommand}" FontWeight="SemiBold" InputGestureText="Enter" />
                 <MenuItem Header="{DynamicResource LOCGameCollections_ShowInLibrary}" Command="{Binding ShowInLibraryCommand}" />
                 <Separator />
-                <MenuItem Header="{DynamicResource LOCGameCollections_RemoveFromCollection}" Command="{Binding RemoveCommand}" InputGestureText="Del" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_MoveToTop}" Command="{Binding MoveToTopCommand}" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_MoveUp}" Command="{Binding MoveUpCommand}" InputGestureText="Alt+Up" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_MoveDown}" Command="{Binding MoveDownCommand}" InputGestureText="Alt+Down" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_MoveToBottom}" Command="{Binding MoveToBottomCommand}" />
+                <Separator Visibility="{Binding CanRemove, Converter={StaticResource BoolToVisibility}}" />
+                <MenuItem Header="{DynamicResource LOCGameCollections_RemoveFromCollection}" Command="{Binding RemoveCommand}" InputGestureText="Del"
+                          Visibility="{Binding CanRemove, Converter={StaticResource BoolToVisibility}}" />
             </ContextMenu>
 
             <Style x:Key="GameContainerStyle" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
@@ -29,6 +35,9 @@
                 <Setter Property="ToolTip" Value="{Binding Name}" />
                 <EventSetter Event="MouseDoubleClick" Handler="GameItem_MouseDoubleClick" />
                 <EventSetter Event="Loaded" Handler="GameItem_Loaded" />
+                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GameItem_PreviewMouseLeftButtonDown" />
+                <EventSetter Event="PreviewMouseLeftButtonUp" Handler="GameItem_PreviewMouseLeftButtonUp" />
+                <EventSetter Event="PreviewMouseMove" Handler="GameItem_PreviewMouseMove" />
             </Style>
 
             <DataTemplate x:Key="GameTemplate" DataType="{x:Type vm:CollectionGameViewModel}">
@@ -50,6 +59,7 @@
     <DockPanel Margin="20,10,20,0">
         <!-- Back navigation -->
         <Button DockPanel.Dock="Top" HorizontalAlignment="Left" Style="{StaticResource GcButton}"
+                Visibility="{Binding IsInWindow, Converter={StaticResource InverseBoolToVisibility}}"
                 Command="{Binding BackCommand}"
                 AutomationProperties.Name="{DynamicResource LOCGameCollections_BackToCollections}">
             <StackPanel Orientation="Horizontal">
@@ -73,7 +83,14 @@
                     <TextBlock Text="{Binding Header.RatingText}" Style="{StaticResource GcText}" />
                     <TextBlock Text="•" Style="{StaticResource GcMutedText}" Margin="10,0" />
                     <TextBlock Text="{Binding Header.GameCountText}" Style="{StaticResource GcMutedText}" />
+                    <Border Style="{StaticResource GcBadge}" Margin="10,0,0,0"
+                            Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
+                    </Border>
                 </StackPanel>
+                <TextBlock Text="{Binding RulesSummary}" Style="{StaticResource GcMutedText}"
+                           TextWrapping="Wrap" Margin="0,8,0,0"
+                           Visibility="{Binding RulesSummary, Converter={StaticResource HasValueToVisibility}}" />
                 <ScrollViewer MaxHeight="96" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto"
                               Visibility="{Binding Header.HasDescription, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="{Binding Header.Description}" Style="{StaticResource GcMutedText}" TextWrapping="Wrap" />
@@ -85,7 +102,16 @@
                             <TextBlock Text="{DynamicResource LOCGameCollections_EditCollection}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
+                    <Button Style="{StaticResource GcButton}" Command="{Binding RefreshCommand}" Margin="0,0,8,0"
+                            ToolTip="{DynamicResource LOCGameCollections_RefreshNowTooltip}"
+                            Content="{DynamicResource LOCGameCollections_RefreshNow}"
+                            Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}" />
+                    <Button Style="{StaticResource GcButton}" Command="{Binding OpenInCollectionsCommand}" Margin="0,0,8,0"
+                            ToolTip="{DynamicResource LOCGameCollections_OpenInCollectionsTooltip}"
+                            Content="{DynamicResource LOCGameCollections_OpenInCollections}"
+                            Visibility="{Binding IsInWindow, Converter={StaticResource BoolToVisibility}}" />
                     <Button Style="{StaticResource GcButton}" Command="{Binding ShowAllInLibraryCommand}" Margin="0,0,8,0"
+                            Visibility="{Binding IsInWindow, Converter={StaticResource InverseBoolToVisibility}}"
                             ToolTip="{DynamicResource LOCGameCollections_ShowAllInLibraryTooltip}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xef24;" Style="{StaticResource GcGlyph}" Margin="0,0,6,0" />
@@ -125,6 +151,9 @@
                       Content="{DynamicResource LOCGameCollections_InstalledOnly}" />
             <TextBlock DockPanel.Dock="Right" Text="{Binding VisibleCountText}" Style="{StaticResource GcMutedText}"
                        VerticalAlignment="Center" Margin="10,0,0,0" />
+            <TextBlock DockPanel.Dock="Right" Text="{Binding ReorderHint}" Style="{StaticResource GcMutedText}"
+                       FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="10,0,0,0"
+                       TextTrimming="CharacterEllipsis" />
         </DockPanel>
 
         <Grid>
@@ -137,6 +166,11 @@
                      ItemContainerStyle="{StaticResource GameContainerStyle}"
                      ScrollViewer.CanContentScroll="False"
                      KeyDown="GamesList_KeyDown"
+                     PreviewKeyDown="GamesList_PreviewKeyDown"
+                     AllowDrop="True"
+                     DragOver="GamesList_DragOver"
+                     DragLeave="GamesList_DragLeave"
+                     Drop="GamesList_Drop"
                      SizeChanged="GamesList_SizeChanged"
                      AutomationProperties.Name="{Binding Header.Title}">
                 <ListBox.ItemsPanel>
@@ -146,12 +180,17 @@
                 </ListBox.ItemsPanel>
             </ListBox>
 
+            <!-- Shows where dragged games will land. -->
+            <Canvas IsHitTestVisible="False" ClipToBounds="True">
+                <Rectangle x:Name="DropIndicator" Width="3" Fill="{DynamicResource GlyphBrush}" Visibility="Collapsed" />
+            </Canvas>
+
             <!-- Empty collection -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0" MaxWidth="420"
                         Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="{DynamicResource LOCGameCollections_CollectionEmptyTitle}" Style="{StaticResource GcText}"
+                <TextBlock Text="{Binding EmptyTitle}" Style="{StaticResource GcText}"
                            FontSize="{DynamicResource FontSizeLarge}" HorizontalAlignment="Center" />
-                <TextBlock Text="{DynamicResource LOCGameCollections_CollectionEmptyDescription}" Style="{StaticResource GcMutedText}"
+                <TextBlock Text="{Binding EmptyDescription}" Style="{StaticResource GcMutedText}"
                            TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0" />
             </StackPanel>
 

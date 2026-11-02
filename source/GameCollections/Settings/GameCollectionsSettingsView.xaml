@@ -5,11 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="600">
-    <!-- No options yet. Future settings bind to Settings.* on GameCollectionsSettingsViewModel. -->
     <StackPanel Margin="20">
+        <CheckBox IsChecked="{Binding Settings.AddDetailsListToAnyTheme}"
+                  Content="{DynamicResource LOCGameCollections_SettingAddListToAnyTheme}" />
         <TextBlock Style="{StaticResource BaseTextBlockStyle}"
                    Foreground="{DynamicResource TextBrushDarker}"
-                   TextWrapping="Wrap"
-                   Text="{DynamicResource LOCGameCollections_SettingsEmpty}" />
+                   TextWrapping="Wrap" Margin="0,4,0,16"
+                   Text="{DynamicResource LOCGameCollections_SettingAddListToAnyThemeHint}" />
+        <CheckBox IsChecked="{Binding Settings.ShowDynamicCollectionsInDetails}"
+                  Content="{DynamicResource LOCGameCollections_SettingShowDynamicInDetails}" />
+        <TextBlock Style="{StaticResource BaseTextBlockStyle}"
+                   Foreground="{DynamicResource TextBrushDarker}"
+                   TextWrapping="Wrap" Margin="0,4,0,0"
+                   Text="{DynamicResource LOCGameCollections_SettingShowDynamicInDetailsHint}" />
     </StackPanel>
 </UserControl>

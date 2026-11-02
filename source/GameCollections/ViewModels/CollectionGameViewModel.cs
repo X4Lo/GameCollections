@@ -17,6 +17,7 @@ namespace GameCollections.ViewModels
         private static readonly ILogger logger = LogManager.GetLogger();
 
         private readonly CollectionManager manager;
+        private readonly CollectionDetailsViewModel owner;
         private bool coverRequested;
         private string coverPath;
         private int coverVersion;
@@ -40,15 +41,26 @@ namespace GameCollections.ViewModels
         public RelayCommand PlayCommand { get; }
         public RelayCommand ShowInLibraryCommand { get; }
         public RelayCommand RemoveCommand { get; }
+        public RelayCommand MoveToTopCommand { get; }
+        public RelayCommand MoveUpCommand { get; }
+        public RelayCommand MoveDownCommand { get; }
+        public RelayCommand MoveToBottomCommand { get; }
+
+        public bool CanRemove => owner.CanRemove;
 
         public CollectionGameViewModel(Game game, int order, CollectionManager manager, CollectionDetailsViewModel owner)
         {
             this.game = game;
             this.manager = manager;
+            this.owner = owner;
             Order = order;
             PlayCommand = new RelayCommand(() => owner.PlayGame(this));
             ShowInLibraryCommand = new RelayCommand(() => owner.ShowGameInLibrary(this));
             RemoveCommand = new RelayCommand(() => owner.RemoveGame(this));
+            MoveToTopCommand = new RelayCommand(() => owner.MoveToEdge(this, false), () => owner.CanReorder);
+            MoveUpCommand = new RelayCommand(() => owner.MoveOneStep(this, false), () => owner.CanReorder);
+            MoveDownCommand = new RelayCommand(() => owner.MoveOneStep(this, true), () => owner.CanReorder);
+            MoveToBottomCommand = new RelayCommand(() => owner.MoveToEdge(this, true), () => owner.CanReorder);
         }
 
         public void Update(Game updatedGame, int order)
@@ -59,6 +71,7 @@ namespace GameCollections.ViewModels
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(IsInstalled));
             OnPropertyChanged(nameof(PlayActionText));
+            OnPropertyChanged(nameof(CanRemove));
 
             if (coverRequested && manager.GetGameCoverPath(game) != coverPath)
             {

@@ -14,6 +14,9 @@ namespace GameCollections.Services
     /// </summary>
     public class DialogService
     {
+        private const double DynamicEditorWidth = 980;
+        private const double DynamicEditorHeight = 920;
+
         private readonly IPlayniteAPI playniteApi;
         private readonly CollectionManager manager;
 
@@ -52,10 +55,32 @@ namespace GameCollections.Services
         private Guid? ShowEditor(GameCollection collection)
         {
             var viewModel = new EditCollectionViewModel(playniteApi, manager, collection);
-            var window = CreateWindow(viewModel.WindowTitle, 640, 480, 520, 420);
+            var window = CreateWindow(viewModel.WindowTitle, viewModel.IsDynamic ? DynamicEditorWidth : 640, viewModel.IsDynamic ? DynamicEditorHeight : 560, 520, 420);
             viewModel.CloseRequested = result => Close(window, result);
+            viewModel.DynamicModeChanged += (s, e) =>
+            {
+                // The rule builder needs more room; switching back leaves the size the user sees alone.
+                if (viewModel.IsDynamic)
+                {
+                    var workArea = SystemParameters.WorkArea;
+                    window.Width = Math.Max(window.Width, Math.Min(DynamicEditorWidth, workArea.Width * 0.9));
+                    window.Height = Math.Max(window.Height, Math.Min(DynamicEditorHeight, workArea.Height * 0.9));
+                }
+            };
             window.Content = new EditCollectionView { DataContext = viewModel };
             return window.ShowDialog() == true ? viewModel.SavedCollectionId : null;
+        }
+
+        /// <summary>
+        /// Shows a collection's page in its own window. Used from the game details view, because
+        /// Playnite has no API for a plugin to switch to its sidebar view.
+        /// </summary>
+        public void ShowCollectionPage(CollectionDetailsViewModel viewModel)
+        {
+            var window = CreateWindow(viewModel.Header.Title, 1000, 760, 700, 500);
+            viewModel.CloseWindow = () => window.Close();
+            window.Content = new CollectionDetailsView { DataContext = viewModel };
+            window.ShowDialog();
         }
 
         private Window CreateWindow(string title, double width, double height, double minWidth, double minHeight)

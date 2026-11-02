@@ -47,6 +47,9 @@ namespace GameCollections.ViewModels
         private ImageSource poster;
         public ImageSource Poster { get => poster; private set => SetValue(ref poster, value); }
 
+        private bool isDynamic;
+        public bool IsDynamic { get => isDynamic; private set => SetValue(ref isDynamic, value); }
+
         public string RatingText => Loc.Rating(rating);
         public string GameCountText => Loc.GameCount(gameCount);
         public bool HasDescription => !string.IsNullOrWhiteSpace(description);
@@ -75,6 +78,7 @@ namespace GameCollections.ViewModels
             Title = collection.Title;
             Description = collection.Description;
             Rating = collection.Rating;
+            IsDynamic = collection.IsDynamic;
             GameCount = manager.GetGames(collection).Count;
             OnPropertyChanged(nameof(RatingText));
             OnPropertyChanged(nameof(GameCountText));

@@ -75,7 +75,58 @@ namespace GameCollections.ViewModels
         // A fresh "create" dialog should not open with a "title is required" error.
         private bool titleTouched;
         public string TitleError => titleTouched || IsEditing ? manager.ValidateTitle(title, existing?.Id) : null;
-        public bool CanSave => manager.ValidateTitle(title, existing?.Id) == null;
+        public bool CanSave => manager.ValidateTitle(title, existing?.Id) == null && (!isDynamic || Rules.IsComplete);
+
+        public DynamicRulesViewModel Rules { get; }
+
+        private bool isDynamic;
+        public bool IsDynamic
+        {
+            get => isDynamic;
+            set
+            {
+                if (isDynamic == value)
+                {
+                    return;
+                }
+
+                SetValue(ref isDynamic, value);
+                OnPropertyChanged(nameof(IsManual));
+                OnPropertyChanged(nameof(TypeChangeNote));
+                RaiseValidationChanged();
+                if (value)
+                {
+                    Rules.UpdatePreview();
+                }
+
+                DynamicModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool IsManual { get => !isDynamic; set => IsDynamic = !value; }
+
+        public event EventHandler DynamicModeChanged;
+
+        /// <summary>
+        /// Says what happens to the existing games when an existing collection changes type.
+        /// </summary>
+        public string TypeChangeNote
+        {
+            get
+            {
+                if (existing == null || existing.IsDynamic == isDynamic)
+                {
+                    return null;
+                }
+
+                if (isDynamic)
+                {
+                    return existing.GameIds.Count > 0 ? Loc.Get("LOCGameCollections_WarningReplaceGames") : null;
+                }
+
+                return Loc.Get("LOCGameCollections_NoteKeepGames");
+            }
+        }
 
         public RelayCommand SaveCommand { get; }
         public RelayCommand CancelCommand { get; }
@@ -94,6 +145,10 @@ namespace GameCollections.ViewModels
                 description = existing.Description ?? string.Empty;
                 rating = existing.Rating;
             }
+
+            isDynamic = existing?.IsDynamic == true;
+            Rules = new DynamicRulesViewModel(playniteApi, existing?.Rules);
+            Rules.RulesChanged += (s, e) => RaiseValidationChanged();
 
             SaveCommand = new RelayCommand(Save);
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
@@ -199,12 +254,12 @@ namespace GameCollections.ViewModels
             {
                 if (existing == null)
                 {
-                    var created = manager.CreateCollection(title, description, rating, posterChange == PosterChange.Replace ? posterSourcePath : null, null);
+                    var created = manager.CreateCollection(title, description, rating, posterChange == PosterChange.Replace ? posterSourcePath : null, null, isDynamic ? Rules.ToModel() : null);
                     SavedCollectionId = created.Id;
                 }
                 else
                 {
-                    manager.UpdateCollection(existing.Id, title, description, rating, posterChange, posterSourcePath);
+                    manager.UpdateCollection(existing.Id, title, description, rating, posterChange, posterSourcePath, isDynamic ? Rules.ToModel() : null);
                     SavedCollectionId = existing.Id;
                 }
 

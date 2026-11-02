@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace GameCollections
 {
@@ -18,10 +20,18 @@ namespace GameCollections
     {
         private static readonly ILogger logger = LogManager.GetLogger();
 
+        private const string SourceName = "GameCollections";
+        private const string CollectionsControlName = "CollectionsControl";
+
         private readonly GameCollectionsSettingsViewModel settings;
         private readonly CollectionManager manager;
         private readonly DialogService dialogs;
+        private DynamicCollectionRefresher refresher;
+        private DetailsViewIntegration detailsIntegration;
         private CollectionsRootViewModel rootViewModel;
+        private SidebarItem sidebarItem;
+
+        public GameCollectionsSettingsViewModel Settings => settings;
 
         public override Guid Id { get; } = Guid.Parse("3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54");
 
@@ -39,6 +49,18 @@ namespace GameCollections
                 new CollectionRepository(dataDirectory),
                 new PosterStorage(Path.Combine(dataDirectory, "Posters")));
             dialogs = new DialogService(api, manager);
+
+            AddSettingsSupport(new AddSettingsSupportArgs
+            {
+                SourceName = SourceName,
+                SettingsRoot = $"{nameof(Settings)}.{nameof(Settings.Settings)}"
+            });
+
+            AddCustomElementSupport(new AddCustomElementSupportArgs
+            {
+                ElementList = new List<string> { CollectionsControlName },
+                SourceName = SourceName
+            });
         }
 
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
@@ -67,12 +89,56 @@ namespace GameCollections
 
             PlayniteApi.Database.Games.ItemCollectionChanged += Games_ItemCollectionChanged;
             PlayniteApi.Database.Games.ItemUpdated += Games_ItemUpdated;
+
+            RunOnUiThread(() =>
+            {
+                refresher = new DynamicCollectionRefresher(PlayniteApi, manager, PlayniteApi.MainView.UIDispatcher ?? Dispatcher.CurrentDispatcher);
+                refresher.Start();
+
+                if (PlayniteApi.ApplicationInfo.Mode == ApplicationMode.Desktop)
+                {
+                    detailsIntegration = new DetailsViewIntegration(
+                        PlayniteApi,
+                        settings,
+                        () => new GameCollectionsControl(manager, settings, OpenCollectionInWindow),
+                        () => Application.Current?.MainWindow,
+                        PlayniteApi.MainView.UIDispatcher ?? Dispatcher.CurrentDispatcher);
+                    detailsIntegration.Start();
+                }
+            });
+        }
+
+        public override void OnGameSelected(OnGameSelectedEventArgs args)
+        {
+            var games = args.NewValue;
+            RunOnUiThread(() => detailsIntegration?.OnGameSelected(games));
+        }
+
+        public override void OnLibraryUpdated(OnLibraryUpdatedEventArgs args)
+        {
+            RunOnUiThread(() => refresher?.ScheduleFullRefresh(TimeSpan.FromSeconds(1)));
+        }
+
+        public override Control GetGameViewControl(GetGameViewControlArgs args)
+        {
+            // The control relies on Desktop mode's theme styles, and collections are a Desktop mode feature.
+            if (args.Name != CollectionsControlName || PlayniteApi.ApplicationInfo.Mode != ApplicationMode.Desktop)
+            {
+                return null;
+            }
+
+            return new GameCollectionsControl(manager, settings, OpenCollectionInWindow);
         }
 
         public override void OnApplicationStopped(OnApplicationStoppedEventArgs args)
         {
             PlayniteApi.Database.Games.ItemCollectionChanged -= Games_ItemCollectionChanged;
             PlayniteApi.Database.Games.ItemUpdated -= Games_ItemUpdated;
+            RunOnUiThread(() =>
+            {
+                refresher?.Stop();
+                detailsIntegration?.Stop();
+            });
         }
 
         public override IEnumerable<GameMenuItem> GetGameMenuItems(GetGameMenuItemsArgs args)
@@ -98,7 +164,7 @@ namespace GameCollections
 
         public override IEnumerable<SidebarItem> GetSidebarItems()
         {
-            yield return new SidebarItem
+            sidebarItem = sidebarItem ?? new SidebarItem
             {
                 Title = Loc.Get("LOCGameCollections_SidebarTitle"),
                 Type = SiderbarItemType.View,
@@ -107,14 +173,11 @@ namespace GameCollections
                 // sort) persists so the user returns to where they left off.
                 Opened = () =>
                 {
-                    if (rootViewModel == null)
-                    {
-                        rootViewModel = new CollectionsRootViewModel(PlayniteApi, manager, dialogs, settings);
-                    }
-
-                    return new CollectionsRootView { DataContext = rootViewModel };
+                    return new CollectionsRootView { DataContext = GetRootViewModel() };
                 }
             };
+
+            yield return sidebarItem;
         }
 
         public override ISettings GetSettings(bool firstRunSettings)
@@ -129,24 +192,74 @@ namespace GameCollections
 
         private void Games_ItemCollectionChanged(object sender, ItemCollectionChangedEventArgs<Game> e)
         {
-            if (e.RemovedItems == null || e.RemovedItems.Count == 0)
+            if (e.RemovedItems != null && e.RemovedItems.Count > 0)
             {
-                return;
+                var removedIds = e.RemovedItems.Select(g => g.Id).ToList();
+                RunOnUiThread(() => manager.RemoveGamesFromAllCollections(removedIds));
             }
 
-            var removedIds = e.RemovedItems.Select(g => g.Id).ToList();
-            RunOnUiThread(() => manager.RemoveGamesFromAllCollections(removedIds));
+            if (e.AddedItems != null && e.AddedItems.Count > 0)
+            {
+                var addedIds = e.AddedItems.Select(g => g.Id).ToList();
+                RunOnUiThread(() => refresher?.NotifyGamesChanged(addedIds));
+            }
         }
 
         private void Games_ItemUpdated(object sender, ItemUpdatedEventArgs<Game> e)
         {
-            if (rootViewModel == null || e.UpdatedItems == null || e.UpdatedItems.Count == 0)
+            if (e.UpdatedItems == null || e.UpdatedItems.Count == 0)
             {
                 return;
             }
 
             var updatedIds = new HashSet<Guid>(e.UpdatedItems.Select(u => u.NewData.Id));
-            RunOnUiThread(() => rootViewModel.OnGamesUpdated(updatedIds));
+            RunOnUiThread(() =>
+            {
+                rootViewModel?.OnGamesUpdated(updatedIds);
+                refresher?.NotifyGamesChanged(updatedIds);
+            });
+        }
+
+        private CollectionsRootViewModel GetRootViewModel()
+        {
+            if (rootViewModel == null)
+            {
+                rootViewModel = new CollectionsRootViewModel(PlayniteApi, manager, dialogs, settings)
+                {
+                    SwitchToSidebarView = SwitchToSidebarView
+                };
+            }
+
+            return rootViewModel;
+        }
+
+        private void SwitchToSidebarView(Guid collectionId)
+        {
+            // Queued so the collection's modal window has finished closing before the main view changes.
+            (PlayniteApi.MainView.UIDispatcher ?? Dispatcher.CurrentDispatcher).BeginInvoke((Action)(() =>
+            {
+                if (!SidebarNavigator.TryActivate(Application.Current?.MainWindow, sidebarItem))
+                {
+                    // The page is already showing in the sidebar view, so one click gets there.
+                    PlayniteApi.Notifications.Add(new NotificationMessage(
+                        "GameCollections_OpenManually",
+                        Loc.Format("LOCGameCollections_OpenCollectionsManually", manager.GetCollection(collectionId)?.Title),
+                        NotificationType.Info));
+                }
+            }));
+        }
+
+        private void OpenCollectionInWindow(Guid collectionId)
+        {
+            try
+            {
+                GetRootViewModel().OpenCollectionInWindow(collectionId);
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Failed to open collection {collectionId}.");
+                PlayniteApi.Dialogs.ShowErrorMessage(e.Message, Loc.Get("LOCGameCollections_PluginName"));
+            }
         }
 
         private void RunOnUiThread(Action action)

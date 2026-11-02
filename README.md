@@ -25,6 +25,11 @@
 - **Collection pages** show the poster, description, rating and games. You can search, sort by name, release date,
   last played, time played or date added, show installed games only, and Play/Install, Show in library or
   Remove games.
+- **Manual order**: drag games into the order you want, or use the right-click menu or Alt+arrow keys.
+- **Dynamic collections** fill themselves from your rules, for example *Platform is PS1 and Genres include Indie*.
+  Combine conditions into blocks, join blocks with AND or OR, and see the matching games live while you edit.
+- **Game details integration**: see the selected game's collections in the details view, with any theme that
+  keeps Playnite's standard layout. Themes can also choose where the list goes.
 - **Posters**: use your own image, or let the collection use its first game's cover.
 - **Safe with your library and data**:
   - Deleting a collection never touches its games.
@@ -48,7 +53,13 @@ Requires a recent Playnite 10 release (extension SDK 6.11 or later), in Desktop 
 
 - [User guide](docs/user-guide.md): how to use every feature, keyboard shortcuts, where data is stored, and known limitations.
 - [Architecture and development](docs/architecture.md): repository layout, building, and how the code is organized.
+- [Developer guide](docs/developer-guide.md): how it works in depth, the data format, adding rule fields, testing and releasing.
 - [Changelog](CHANGELOG.md)
+
+## Theme Integration
+
+Theme authors can choose where the collections list appears and bind to the extension's settings.
+See [Theme integration](docs/theme-integration.md).
 
 ## Building
 

@@ -1,3 +1,4 @@
+using Playnite.SDK.Data;
 using System;
 using System.Collections.Generic;
 
@@ -20,6 +21,16 @@ namespace GameCollections.Models
         public string PosterFileName { get; set; }
 
         public List<Guid> GameIds { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// The rules of a dynamic collection, or null for a manual one. For a dynamic collection
+        /// <see cref="GameIds"/> holds the latest matches, so it is available without searching the library.
+        /// </summary>
+        public DynamicRules Rules { get; set; }
+
+        [DontSerialize]
+        public bool IsDynamic => Rules != null;
+
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
     }
@@ -29,6 +40,9 @@ namespace GameCollections.Models
     /// </summary>
     public class CollectionsDataFile
     {
+        /// <summary>
+        /// The version of this file's format. See <c>CollectionsDataMigrator</c>.
+        /// </summary>
         public int SchemaVersion { get; set; }
         public List<GameCollection> Collections { get; set; } = new List<GameCollection>();
     }

@@ -22,6 +22,20 @@ namespace GameCollections.Services
     }
 
     /// <summary>
+    /// The outcome of searching the library for one dynamic collection.
+    /// </summary>
+    public class DynamicMatchResult
+    {
+        public Guid CollectionId { get; set; }
+
+        /// <summary>
+        /// The rules the search used, to detect that they were edited in the meantime.
+        /// </summary>
+        public DynamicRules Rules { get; set; }
+        public List<Guid> GameIds { get; set; }
+    }
+
+    /// <summary>
     /// Owns the in-memory collection list and every operation on it. Each mutation is persisted
     /// immediately and announced through <see cref="CollectionsChanged"/>.
     /// All members must be called on the UI thread.
@@ -38,6 +52,7 @@ namespace GameCollections.Services
         private readonly CollectionRepository repository;
         private readonly PosterStorage posterStorage;
         private readonly List<GameCollection> collections = new List<GameCollection>();
+        private Dictionary<Guid, List<GameCollection>> collectionsByGame;
 
         public event EventHandler<CollectionsChangedEventArgs> CollectionsChanged;
 
@@ -58,6 +73,7 @@ namespace GameCollections.Services
             var result = repository.Load();
             collections.Clear();
             collections.AddRange(result.Collections);
+            collectionsByGame = null;
             return result.Warning;
         }
 
@@ -132,7 +148,7 @@ namespace GameCollections.Services
 
         #region Collection operations
 
-        public GameCollection CreateCollection(string title, string description, double rating, string posterSourcePath, IEnumerable<Guid> gameIds)
+        public GameCollection CreateCollection(string title, string description, double rating, string posterSourcePath, IEnumerable<Guid> gameIds, DynamicRules rules = null)
         {
             var collection = BuildNewCollection(title, gameIds);
             collection.Description = NormalizeDescription(description);
@@ -142,12 +158,22 @@ namespace GameCollections.Services
                 collection.PosterFileName = posterStorage.Import(collection.Id, posterSourcePath);
             }
 
+            if (rules != null)
+            {
+                collection.Rules = rules;
+                MergeMatches(collection, FindMatches(rules, playniteApi.Database.Games, DateTime.Now));
+            }
+
             collections.Add(collection);
             Persist(new[] { collection.Id });
             return collection;
         }
 
-        public void UpdateCollection(Guid id, string title, string description, double rating, PosterChange posterChange, string posterSourcePath)
+        /// <summary>
+        /// Saves the collection's properties. Passing rules makes it dynamic and replaces its games with
+        /// the matches; passing null makes it manual, and a dynamic collection keeps its current games.
+        /// </summary>
+        public void UpdateCollection(Guid id, string title, string description, double rating, PosterChange posterChange, string posterSourcePath, DynamicRules rules = null)
         {
             var collection = GetCollection(id);
             if (collection == null)
@@ -180,6 +206,11 @@ namespace GameCollections.Services
             collection.Rating = NormalizeRating(rating);
             collection.PosterFileName = newPoster;
             collection.ModifiedAt = DateTime.UtcNow;
+            collection.Rules = rules;
+            if (rules != null)
+            {
+                MergeMatches(collection, FindMatches(rules, playniteApi.Database.Games, DateTime.Now));
+            }
 
             // The old poster is only deleted once the data file no longer references it.
             if (Persist(new[] { id }) && obsoletePoster != null)
@@ -211,22 +242,179 @@ namespace GameCollections.Services
         public void AddGames(Guid collectionId, IEnumerable<Guid> gameIds)
         {
             var collection = GetCollection(collectionId);
-            if (collection != null && AddDistinct(collection, gameIds))
+            if (collection != null && !collection.IsDynamic && AddDistinct(collection, gameIds))
             {
                 Persist(new[] { collectionId });
             }
         }
 
         /// <summary>
-        /// Removes game references from a collection. The games stay in the Playnite library.
+        /// Removes game references from a manual collection. The games stay in the Playnite library.
+        /// The games of a dynamic collection are decided by its rules, so they can't be removed by hand.
         /// </summary>
         public void RemoveGames(Guid collectionId, IEnumerable<Guid> gameIds)
         {
             var collection = GetCollection(collectionId);
-            if (collection != null && RemoveIds(collection, new HashSet<Guid>(gameIds)))
+            if (collection != null && !collection.IsDynamic && RemoveIds(collection, new HashSet<Guid>(gameIds)))
             {
                 Persist(new[] { collectionId });
             }
+        }
+
+        /// <summary>
+        /// Moves games within a collection, keeping their relative order. They are placed next to
+        /// <paramref name="anchorId"/>: after it when <paramref name="after"/> is set, otherwise before it.
+        /// A null anchor means the end of the collection when <paramref name="after"/> is set, otherwise the start.
+        /// </summary>
+        public bool MoveGames(Guid collectionId, IEnumerable<Guid> gameIds, Guid? anchorId, bool after)
+        {
+            var collection = GetCollection(collectionId);
+            if (collection == null)
+            {
+                return false;
+            }
+
+            var moving = new HashSet<Guid>(gameIds);
+            if (anchorId.HasValue && moving.Contains(anchorId.Value))
+            {
+                return false;
+            }
+
+            var moved = collection.GameIds.Where(moving.Contains).ToList();
+            var remaining = collection.GameIds.Where(id => !moving.Contains(id)).ToList();
+            int index;
+            if (anchorId.HasValue)
+            {
+                index = remaining.IndexOf(anchorId.Value);
+                if (index < 0)
+                {
+                    return false;
+                }
+
+                index += after ? 1 : 0;
+            }
+            else
+            {
+                index = after ? remaining.Count : 0;
+            }
+
+            remaining.InsertRange(index, moved);
+            if (moved.Count == 0 || remaining.SequenceEqual(collection.GameIds))
+            {
+                return false;
+            }
+
+            collection.GameIds = remaining;
+            collection.ModifiedAt = DateTime.UtcNow;
+            Persist(new[] { collectionId });
+            return true;
+        }
+
+        /// <summary>
+        /// Re-checks one dynamic collection against the whole library right away.
+        /// </summary>
+        public void RefreshCollection(Guid collectionId)
+        {
+            var collection = GetCollection(collectionId);
+            if (collection != null && collection.IsDynamic &&
+                MergeMatches(collection, FindMatches(collection.Rules, playniteApi.Database.Games, DateTime.Now)))
+            {
+                Persist(new[] { collectionId });
+            }
+        }
+
+        /// <summary>
+        /// Finds the games matching the rules, sorted by name. Safe to call on a background thread.
+        /// </summary>
+        public static List<Guid> FindMatches(DynamicRules rules, IEnumerable<Game> games, DateTime now)
+        {
+            var isMatch = RuleEngine.Compile(rules, now);
+            return games
+                .Where(isMatch)
+                .OrderBy(g => string.IsNullOrEmpty(g.SortingName) ? g.Name : g.SortingName, StringComparer.CurrentCultureIgnoreCase)
+                .Select(g => g.Id)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Applies background search results in a single save. A result is skipped if the collection's
+        /// rules were changed after the search started, since it would be out of date.
+        /// </summary>
+        public void ApplyMatches(IEnumerable<DynamicMatchResult> results)
+        {
+            var changed = new List<Guid>();
+            foreach (var result in results)
+            {
+                var collection = GetCollection(result.CollectionId);
+                if (collection != null && ReferenceEquals(collection.Rules, result.Rules) && MergeMatches(collection, result.GameIds))
+                {
+                    changed.Add(collection.Id);
+                }
+            }
+
+            if (changed.Count > 0)
+            {
+                Persist(changed);
+            }
+        }
+
+        /// <summary>
+        /// Updates dynamic collections after the given games were added or changed. Only these games
+        /// are tested, so the cost depends on how many changed and not on the size of the library.
+        /// </summary>
+        public void ApplyGameChanges(ICollection<Guid> gameIds)
+        {
+            var changed = new List<Guid>();
+            var now = DateTime.Now;
+            foreach (var collection in collections.Where(c => c.IsDynamic))
+            {
+                var isMatch = RuleEngine.Compile(collection.Rules, now);
+                var current = new HashSet<Guid>(collection.GameIds);
+                var modified = false;
+                foreach (var id in gameIds)
+                {
+                    var matches = isMatch(playniteApi.Database.Games.Get(id));
+                    if (matches && current.Add(id))
+                    {
+                        collection.GameIds.Add(id);
+                        modified = true;
+                    }
+                    else if (!matches && current.Remove(id))
+                    {
+                        collection.GameIds.Remove(id);
+                        modified = true;
+                    }
+                }
+
+                if (modified)
+                {
+                    changed.Add(collection.Id);
+                }
+            }
+
+            if (changed.Count > 0)
+            {
+                Persist(changed);
+            }
+        }
+
+        /// <summary>
+        /// Makes the collection hold exactly the matching games. Games already in it keep their position,
+        /// which preserves any manual ordering, and new ones go at the end.
+        /// </summary>
+        private static bool MergeMatches(GameCollection collection, IReadOnlyCollection<Guid> matches)
+        {
+            var matching = new HashSet<Guid>(matches);
+            var merged = collection.GameIds.Where(matching.Contains).ToList();
+            var current = new HashSet<Guid>(merged);
+            merged.AddRange(matches.Where(id => !current.Contains(id)));
+            if (merged.SequenceEqual(collection.GameIds))
+            {
+                return false;
+            }
+
+            collection.GameIds = merged;
+            return true;
         }
 
         /// <summary>
@@ -310,6 +498,32 @@ namespace GameCollections.Services
         #endregion
 
         #region Games and posters
+
+        /// <summary>
+        /// Returns the collections containing the game. The lookup is cached between changes because
+        /// this runs every time a different game is selected in the library.
+        /// </summary>
+        public IReadOnlyList<GameCollection> GetCollectionsForGame(Guid gameId)
+        {
+            if (collectionsByGame == null)
+            {
+                collectionsByGame = new Dictionary<Guid, List<GameCollection>>();
+                foreach (var collection in collections.OrderBy(c => c.Title, StringComparer.CurrentCultureIgnoreCase))
+                {
+                    foreach (var id in collection.GameIds)
+                    {
+                        if (!collectionsByGame.TryGetValue(id, out var list))
+                        {
+                            collectionsByGame[id] = list = new List<GameCollection>();
+                        }
+
+                        list.Add(collection);
+                    }
+                }
+            }
+
+            return collectionsByGame.TryGetValue(gameId, out var result) ? result : (IReadOnlyList<GameCollection>)new GameCollection[0];
+        }
 
         /// <summary>
         /// Returns the collection's games that still exist in the library, in collection order.
@@ -444,6 +658,7 @@ namespace GameCollections.Services
 
         private bool Persist(IReadOnlyCollection<Guid> changedIds)
         {
+            collectionsByGame = null;
             var saved = false;
             try
             {
