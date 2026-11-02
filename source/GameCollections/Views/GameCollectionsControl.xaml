@@ -16,8 +16,10 @@
     </controls:PluginUserControl.Resources>
 
     <StackPanel>
-        <TextBlock Text="{DynamicResource LOCGameCollections_DetailsHeader}" Style="{StaticResource GcItemTitleText}" Margin="0,0,0,6" />
-        <ItemsControl x:Name="ItemsList" Focusable="False">
+        <StackPanel x:Name="HeaderHost">
+            <TextBlock x:Name="HeaderText" Text="{DynamicResource LOCGameCollections_DetailsHeader}" Style="{StaticResource GcItemTitleText}" />
+        </StackPanel>
+        <ItemsControl x:Name="ItemsList" Focusable="False" Margin="0,6,0,0">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal" />

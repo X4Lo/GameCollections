@@ -129,31 +129,40 @@
         </Grid>
 
         <!-- Toolbar: search, sort, filter -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" LastChildFill="False">
-            <local:SearchBox DockPanel.Dock="Left" Width="240" Height="32"
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding VisibleCountText}" Style="{StaticResource GcMutedText}"
+                       VerticalAlignment="Top" Margin="10,8,0,0" />
+            <WrapPanel Orientation="Horizontal">
+            <local:SearchBox Width="240" Height="32" Margin="0,0,0,4"
                              Text="{Binding SearchText}"
                              Placeholder="{DynamicResource LOCGameCollections_SearchGames}" />
-            <TextBlock DockPanel.Dock="Left" Text="{DynamicResource LOCGameCollections_SortBy}" Style="{StaticResource GcText}"
+            <TextBlock Text="{DynamicResource LOCGameCollections_SortBy}" Style="{StaticResource GcText}"
                        VerticalAlignment="Center" Margin="16,0,8,0" />
-            <ComboBox DockPanel.Dock="Left" MinWidth="150" VerticalAlignment="Center"
+            <ComboBox MinWidth="150" VerticalAlignment="Center"
                       ItemsSource="{Binding SortOptions}"
                       DisplayMemberPath="Label"
                       SelectedValuePath="Field"
                       SelectedValue="{Binding SortField}"
                       AutomationProperties.Name="{DynamicResource LOCGameCollections_SortBy}" />
-            <Button DockPanel.Dock="Left" Style="{StaticResource GcIconButton}" Height="32" Margin="5,0,0,0"
+            <Button Style="{StaticResource GcIconButton}" Height="32" Margin="5,0,0,0"
                     Content="{Binding SortDirectionGlyph}"
                     Command="{Binding ToggleSortDirectionCommand}"
                     ToolTip="{Binding SortDirectionTooltip}"
                     AutomationProperties.Name="{Binding SortDirectionTooltip}" />
-            <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="16,0,0,0"
+            <TextBlock Text="{DynamicResource LOCGameCollections_GroupBy}" Style="{StaticResource GcText}"
+                       VerticalAlignment="Center" Margin="16,0,8,0" />
+            <ComboBox MinWidth="130" VerticalAlignment="Center"
+                      ItemsSource="{Binding GroupOptions}"
+                      DisplayMemberPath="Label"
+                      SelectedValuePath="Field"
+                      SelectedValue="{Binding GroupBy}"
+                      AutomationProperties.Name="{DynamicResource LOCGameCollections_GroupBy}" />
+            <CheckBox VerticalAlignment="Center" Margin="16,0,0,0"
                       IsChecked="{Binding InstalledOnly}"
                       Content="{DynamicResource LOCGameCollections_InstalledOnly}" />
-            <TextBlock DockPanel.Dock="Right" Text="{Binding VisibleCountText}" Style="{StaticResource GcMutedText}"
-                       VerticalAlignment="Center" Margin="10,0,0,0" />
-            <TextBlock DockPanel.Dock="Right" Text="{Binding ReorderHint}" Style="{StaticResource GcMutedText}"
-                       FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="10,0,0,0"
-                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding ReorderHint}" Style="{StaticResource GcMutedText}"
+                       FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="16,0,0,0" />
+            </WrapPanel>
         </DockPanel>
 
         <Grid>
@@ -173,6 +182,20 @@
                      Drop="GamesList_Drop"
                      SizeChanged="GamesList_SizeChanged"
                      AutomationProperties.Name="{Binding Header.Title}">
+                <ListBox.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource GcItemTitleText}"
+                                               FontSize="{DynamicResource FontSizeLarge}" />
+                                    <TextBlock Text="{Binding ItemCount}" Style="{StaticResource GcMutedText}"
+                                               VerticalAlignment="Center" Margin="8,0,0,0" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,10" />

@@ -89,9 +89,12 @@ namespace GameCollections.Views
 
             // Load one extra screen above and below so covers are ready before they scroll in.
             var margin = scrollViewer.ViewportHeight;
-            foreach (var item in GamesList.Items)
+            // Tiles are read from the visual tree because with groups they're nested, and a game can appear more than once.
+            var containers = new List<ListBoxItem>();
+            CollectItems(GamesList, containers);
+            foreach (var container in containers)
             {
-                if (!(GamesList.ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement container) || !container.IsVisible)
+                if (!container.IsVisible || !(container.DataContext is CollectionGameViewModel tile))
                 {
                     continue;
                 }
@@ -101,7 +104,7 @@ namespace GameCollections.Views
                     var top = container.TransformToAncestor(scrollViewer).Transform(new Point(0, 0)).Y;
                     if (top + container.ActualHeight >= -margin && top <= scrollViewer.ViewportHeight + margin)
                     {
-                        ((CollectionGameViewModel)item).RequestCover();
+                        tile.RequestCover();
                     }
                 }
                 catch (InvalidOperationException)
@@ -343,6 +346,22 @@ namespace GameCollections.Views
             public CollectionGameViewModel Tile { get; set; }
             public Rect Bounds { get; set; }
             public bool After { get; set; }
+        }
+
+        private static void CollectItems(DependencyObject parent, List<ListBoxItem> items)
+        {
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is ListBoxItem item)
+                {
+                    items.Add(item);
+                }
+                else
+                {
+                    CollectItems(child, items);
+                }
+            }
         }
 
         private static T FindDescendant<T>(DependencyObject parent) where T : DependencyObject

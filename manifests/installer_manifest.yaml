@@ -1,5 +1,14 @@
 AddonId: GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54
 Packages:
+  - Version: 1.2.0
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-11-02
+    PackageUrl: https://github.com/X4Lo/GameCollections/releases/download/v1.2.0/GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54_1_2_0.pext
+    Changelog:
+      - 'Added: Group games on a collection''s page by platform, series, genre and more, remembered per collection'
+      - 'Added: Optional setting that places the game details list next to the Game Relations section in Stardust, Nova X, Helium and Harmony'
+      - 'Improved: The game details list now uses the same title style as the theme''s other sections'
+      - 'Fixed: Create Collection button overlapping the window buttons on the Collections page'
   - Version: 1.1.0
     RequiredApiVersion: 6.11.0
     ReleaseDate: 2026-11-02

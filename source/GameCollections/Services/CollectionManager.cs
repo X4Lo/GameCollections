@@ -311,6 +311,19 @@ namespace GameCollections.Services
         }
 
         /// <summary>
+        /// Remembers how the collection's page groups its games. A display choice, so it isn't a modification.
+        /// </summary>
+        public void SetGroupBy(Guid collectionId, GameGroupField groupBy)
+        {
+            var collection = GetCollection(collectionId);
+            if (collection != null && collection.GroupBy != groupBy)
+            {
+                collection.GroupBy = groupBy;
+                Persist(new[] { collectionId });
+            }
+        }
+
+        /// <summary>
         /// Re-checks one dynamic collection against the whole library right away.
         /// </summary>
         public void RefreshCollection(Guid collectionId)

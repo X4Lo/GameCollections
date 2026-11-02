@@ -146,19 +146,30 @@
     <sys:String x:Key="LOCGameCollections_RuleOperatorIsEmpty">is empty</sys:String>
     <sys:String x:Key="LOCGameCollections_RuleOperatorNoDate">has no date</sys:String>
 
+    <!-- Grouping on a collection's page -->
+    <sys:String x:Key="LOCGameCollections_GroupBy">Group by</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupNone">None</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupNotSet">Not set</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupReleaseYear">Release year</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupInstallStatus">Install status</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupInstalled">Installed</sys:String>
+    <sys:String x:Key="LOCGameCollections_GroupNotInstalled">Not installed</sys:String>
+
     <!-- Manual order -->
     <sys:String x:Key="LOCGameCollections_MoveToTop">Move to top</sys:String>
     <sys:String x:Key="LOCGameCollections_MoveUp">Move earlier</sys:String>
     <sys:String x:Key="LOCGameCollections_MoveDown">Move later</sys:String>
     <sys:String x:Key="LOCGameCollections_MoveToBottom">Move to end</sys:String>
     <sys:String x:Key="LOCGameCollections_ReorderHint">Drag games to reorder them</sys:String>
-    <sys:String x:Key="LOCGameCollections_ReorderUnavailableHint">To reorder, sort by Collection order, ascending</sys:String>
+    <sys:String x:Key="LOCGameCollections_ReorderUnavailableHint">To reorder, sort by Collection order, ascending, with no grouping</sys:String>
 
     <!-- Game details and settings -->
     <sys:String x:Key="LOCGameCollections_DetailsHeader">Collections</sys:String>
     <sys:String x:Key="LOCGameCollections_SettingShowDynamicInDetails">Display dynamic collections in details view</sys:String>
     <sys:String x:Key="LOCGameCollections_SettingShowDynamicInDetailsHint">When off, game details only list manual collections.</sys:String>
     <sys:String x:Key="LOCGameCollections_SettingAddListToAnyTheme">Show collections in details view</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingThemeSpecificPlacement">Use special placement for Stardust, Nova X, Helium and Harmony</sys:String>
+    <sys:String x:Key="LOCGameCollections_SettingThemeSpecificPlacementHint">Temporary fix. These themes don't have a normal spot for the list, so it goes next to their Game Relations section instead. No effect in other themes.</sys:String>
     <sys:String x:Key="LOCGameCollections_SettingAddListToAnyThemeHint">Adds the list below the game description. Turn this off if it looks wrong in your theme.</sys:String>
 
     <!-- Opening a collection from game details -->

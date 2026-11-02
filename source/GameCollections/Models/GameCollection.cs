@@ -28,6 +28,11 @@ namespace GameCollections.Models
         /// </summary>
         public DynamicRules Rules { get; set; }
 
+        /// <summary>
+        /// How the collection's page groups its games. Only affects how they're shown.
+        /// </summary>
+        public GameGroupField GroupBy { get; set; }
+
         [DontSerialize]
         public bool IsDynamic => Rules != null;
 

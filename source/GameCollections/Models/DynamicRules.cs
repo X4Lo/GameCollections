@@ -43,6 +43,25 @@ namespace GameCollections.Models
         IsEmpty = 12
     }
 
+    /// <summary>
+    /// How a collection's page groups its games.
+    /// </summary>
+    public enum GameGroupField
+    {
+        None = 0,
+        Platform = 1,
+        Series = 2,
+        Genre = 3,
+        Developer = 4,
+        Publisher = 5,
+        Category = 6,
+        Feature = 7,
+        Tag = 8,
+        CompletionStatus = 9,
+        ReleaseYear = 10,
+        InstallStatus = 11
+    }
+
     public enum BlockJoin
     {
         And = 0,

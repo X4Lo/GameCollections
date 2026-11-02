@@ -1,9 +1,12 @@
+using GameCollections.Models;
 using GameCollections.Services;
 using Playnite.SDK;
+using Playnite.SDK.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
@@ -19,6 +22,74 @@ namespace GameCollections.ViewModels
         LastPlayed,
         Playtime,
         DateAdded
+    }
+
+    public class GroupOption
+    {
+        public GameGroupField Field { get; }
+        public string Label { get; }
+
+        public GroupOption(GameGroupField field, string label)
+        {
+            Field = field;
+            Label = label;
+        }
+    }
+
+    /// <summary>
+    /// Puts each game in the groups for its metadata. A game with several genres, for example, is shown in each of them.
+    /// </summary>
+    public class GameGroupDescription : GroupDescription
+    {
+        private readonly IPlayniteAPI playniteApi;
+        private readonly GameGroupField field;
+        private readonly string notSetName = Loc.Get("LOCGameCollections_GroupNotSet");
+
+        public GameGroupDescription(IPlayniteAPI playniteApi, GameGroupField field)
+        {
+            this.playniteApi = playniteApi;
+            this.field = field;
+            CustomSort = Comparer<CollectionViewGroup>.Create(CompareGroups);
+        }
+
+        public override object GroupNameFromItem(object item, int level, CultureInfo culture)
+        {
+            var game = ((CollectionGameViewModel)item).Game;
+            var database = playniteApi.Database;
+            switch (field)
+            {
+                case GameGroupField.Platform: return Names(game.PlatformIds, database.Platforms);
+                case GameGroupField.Series: return Names(game.SeriesIds, database.Series);
+                case GameGroupField.Genre: return Names(game.GenreIds, database.Genres);
+                case GameGroupField.Developer: return Names(game.DeveloperIds, database.Companies);
+                case GameGroupField.Publisher: return Names(game.PublisherIds, database.Companies);
+                case GameGroupField.Category: return Names(game.CategoryIds, database.Categories);
+                case GameGroupField.Feature: return Names(game.FeatureIds, database.Features);
+                case GameGroupField.Tag: return Names(game.TagIds, database.Tags);
+                case GameGroupField.CompletionStatus: return database.CompletionStatuses.Get(game.CompletionStatusId)?.Name ?? notSetName;
+                case GameGroupField.ReleaseYear: return game.ReleaseDate?.Year.ToString(CultureInfo.InvariantCulture) ?? notSetName;
+                default: return Loc.Get(game.IsInstalled ? "LOCGameCollections_GroupInstalled" : "LOCGameCollections_GroupNotInstalled");
+            }
+        }
+
+        // Returning a collection puts the item in every group it names.
+        private object Names<T>(List<Guid> ids, IItemCollection<T> items) where T : DatabaseObject
+        {
+            var names = ids?.Select(id => items.Get(id)?.Name).Where(n => !string.IsNullOrEmpty(n)).Distinct().ToList();
+            return names != null && names.Count > 0 ? (object)names : notSetName;
+        }
+
+        private int CompareGroups(CollectionViewGroup first, CollectionViewGroup second)
+        {
+            var a = (string)first.Name;
+            var b = (string)second.Name;
+            if (a == notSetName || b == notSetName)
+            {
+                return (a == notSetName).CompareTo(b == notSetName);
+            }
+
+            return string.Compare(a, b, StringComparison.CurrentCultureIgnoreCase);
+        }
     }
 
     public class SortOption
@@ -131,9 +202,9 @@ namespace GameCollections.ViewModels
 
         /// <summary>
         /// Games can only be reordered while the page shows the collection's own order;
-        /// in any other sort, a dragged game wouldn't stay where it was dropped.
+        /// in any other sort or with groups, a dragged game wouldn't stay where it was dropped.
         /// </summary>
-        public bool CanReorder => SortField == GameSortField.CollectionOrder && !SortDescending;
+        public bool CanReorder => SortField == GameSortField.CollectionOrder && !SortDescending && GroupBy == GameGroupField.None;
         public string ReorderHint => Loc.Get(CanReorder ? "LOCGameCollections_ReorderHint" : "LOCGameCollections_ReorderUnavailableHint");
 
         /// <summary>
@@ -142,11 +213,45 @@ namespace GameCollections.ViewModels
         public Action CloseWindow { get; set; }
         public bool IsInWindow => CloseWindow != null;
 
+        public IReadOnlyList<GroupOption> GroupOptions { get; } = new List<GroupOption>
+        {
+            new GroupOption(GameGroupField.None, Loc.Get("LOCGameCollections_GroupNone")),
+            new GroupOption(GameGroupField.Platform, Loc.Get("LOCGameCollections_RuleFieldPlatform")),
+            new GroupOption(GameGroupField.Series, Loc.Get("LOCGameCollections_RuleFieldSeries")),
+            new GroupOption(GameGroupField.Genre, Loc.Get("LOCGameCollections_RuleFieldGenre")),
+            new GroupOption(GameGroupField.Developer, Loc.Get("LOCGameCollections_RuleFieldDeveloper")),
+            new GroupOption(GameGroupField.Publisher, Loc.Get("LOCGameCollections_RuleFieldPublisher")),
+            new GroupOption(GameGroupField.Category, Loc.Get("LOCGameCollections_RuleFieldCategory")),
+            new GroupOption(GameGroupField.Feature, Loc.Get("LOCGameCollections_RuleFieldFeature")),
+            new GroupOption(GameGroupField.Tag, Loc.Get("LOCGameCollections_RuleFieldTag")),
+            new GroupOption(GameGroupField.CompletionStatus, Loc.Get("LOCGameCollections_RuleFieldCompletionStatus")),
+            new GroupOption(GameGroupField.ReleaseYear, Loc.Get("LOCGameCollections_GroupReleaseYear")),
+            new GroupOption(GameGroupField.InstallStatus, Loc.Get("LOCGameCollections_GroupInstallStatus"))
+        };
+
+        /// <summary>
+        /// Saved with the collection, so each collection remembers its own grouping.
+        /// </summary>
+        public GameGroupField GroupBy
+        {
+            get => manager.GetCollection(CollectionId)?.GroupBy ?? GameGroupField.None;
+            set
+            {
+                manager.SetGroupBy(CollectionId, value);
+                ApplyGrouping();
+                OnPropertyChanged();
+                RaiseReorderChanged();
+            }
+        }
+
         public bool IsEmpty => Games.Count == 0;
         public bool HasNoResults => !IsEmpty && GamesView.Count == 0;
-        public string VisibleCountText => GamesView.Count == Games.Count
+        // With groups, a game can be in the view several times but is still one game.
+        private int VisibleGameCount => GamesView.Cast<CollectionGameViewModel>().Distinct().Count();
+
+        public string VisibleCountText => VisibleGameCount == Games.Count
             ? Loc.GameCount(Games.Count)
-            : Loc.Format("LOCGameCollections_FilteredGameCount", GamesView.Count, Games.Count);
+            : Loc.Format("LOCGameCollections_FilteredGameCount", VisibleGameCount, Games.Count);
 
         public RelayCommand BackCommand { get; }
         public RelayCommand ToggleSortDirectionCommand { get; }
@@ -165,6 +270,7 @@ namespace GameCollections.ViewModels
 
             GamesView = new ListCollectionView(Games) { Filter = FilterGame };
             ApplySort();
+            ApplyGrouping();
 
             BackCommand = new RelayCommand(() =>
             {
@@ -396,6 +502,20 @@ namespace GameCollections.ViewModels
             var query = searchText.Trim();
             return query.Length == 0 ||
                 CultureInfo.CurrentCulture.CompareInfo.IndexOf(tile.Name ?? string.Empty, query, CompareOptions.IgnoreCase) >= 0;
+        }
+
+        private void ApplyGrouping()
+        {
+            using (GamesView.DeferRefresh())
+            {
+                GamesView.GroupDescriptions.Clear();
+                if (GroupBy != GameGroupField.None)
+                {
+                    GamesView.GroupDescriptions.Add(new GameGroupDescription(playniteApi, GroupBy));
+                }
+            }
+
+            RaiseStateChanged();
         }
 
         private void ApplySort()

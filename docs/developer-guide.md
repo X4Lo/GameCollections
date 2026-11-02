@@ -125,13 +125,21 @@ The order is simply the order of `GameCollection.GameIds`, which is also what th
 `CollectionManager.MoveGames(collectionId, gameIds, anchorId, after)` is the single move operation. Selected games keep
 their relative order.
 
-On the page, `CollectionDetailsViewModel.CanReorder` requires the *Collection order, ascending* sort, because a moved
-game wouldn't stay put in any other. Moves relate to *visible* games, so with a filter active, "move earlier" passes the
+On the page, `CollectionDetailsViewModel.CanReorder` requires the *Collection order, ascending* sort with no grouping,
+because a moved game wouldn't stay put otherwise. Moves relate to *visible* games, so with a filter active, "move earlier" passes the
 previous visible game.
 
 Dragging is in `CollectionDetailsView.xaml.cs`. A click on an already selected game in a multi-selection delays
 collapsing the selection until the mouse button is released, otherwise several games couldn't be dragged.
 `FindDropTarget` picks the closest tile on the pointer's row and which side of it to use.
+
+## Grouping
+
+`GameCollection.GroupBy` holds the choice, set through `CollectionManager.SetGroupBy`. It has a safe default, so old
+files need no migration. `GameGroupDescription` returns a list of names for a multi-value field, which makes WPF put
+the same tile in several groups. That's why `RequestVisibleCovers` reads tiles from the visual tree: with groups,
+`ContainerFromItem` doesn't reach them. To add a grouping, add it to the end of `GameGroupField`, then to
+`GroupNameFromItem` and `GroupOptions`.
 
 ## Dynamic collections
 
@@ -214,6 +222,17 @@ The integration's safeguards:
 - It searches only after a game selection, a view change or a settings change, up to 3 times each, and skips
   `ListBoxItem`s, which hold most of the tree. A 1 second timer only compares `ActiveDesktopView`.
 - Every error is caught and logged, and stops further searching until the next trigger.
+
+Behind the `UseThemeSpecificPlacement` setting (off by default), and only when `ApplicationSettings.DesktopTheme` is in
+`ThemesUsingGameRelationsSection`, it instead goes next to the element whose `Visibility` binding names
+`GameRelationsVisibilityProxy`, in that element's form: a new `TabItem` beside a tab, a new row in a `Grid`, a copy of a
+`Border`'s style, or a plain sibling in a panel. It only needs that element's parent to be visible, so it works without
+Game Relations installed. This is a temporary workaround that depends on these themes' XAML. The injected control stays
+subscribed to events because a control in an unselected tab never loads.
+
+The section title is copied from the theme, not defined here: `FindTitle` and `FindSeparator` look in the neighbouring
+section (the anchor or Game Relations section), and `CloneTitle` copies its current style values. A section that's an
+`Expander` gets an `Expander` of its own with the title in its header.
 
 **This relies on Playnite's internal part names.** Check it after Playnite updates. The default layouts are
 `Themes/Desktop/Default/Views/DetailsViewGameOverview.xaml` and `GridViewGameOverview.xaml` in Playnite's repository.

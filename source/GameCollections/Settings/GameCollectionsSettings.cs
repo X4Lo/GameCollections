@@ -18,6 +18,9 @@ namespace GameCollections.Settings
         private bool addDetailsListToAnyTheme = true;
         public bool AddDetailsListToAnyTheme { get => addDetailsListToAnyTheme; set => SetValue(ref addDetailsListToAnyTheme, value); }
 
+        private bool useThemeSpecificPlacement;
+        public bool UseThemeSpecificPlacement { get => useThemeSpecificPlacement; set => SetValue(ref useThemeSpecificPlacement, value); }
+
         // For themes, which can bind to this to lay out their details view around the list.
         private bool isDetailsControlVisible;
         [DontSerialize]

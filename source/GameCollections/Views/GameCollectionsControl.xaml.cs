@@ -60,10 +60,37 @@ namespace GameCollections.Views
         private readonly GameCollectionsSettingsViewModel settings;
         private readonly Action<Guid> openCollection;
 
+        private bool isInjected;
+
         /// <summary>
-        /// True for the instance this extension added itself, rather than one placed by a theme.
+        /// True for the instance this extension added itself, rather than one placed by a theme. It lasts for
+        /// the whole session and may sit in an unselected tab, which is never loaded, so it stays subscribed.
         /// </summary>
-        public bool IsInjected { get; set; }
+        public bool IsInjected
+        {
+            get => isInjected;
+            set
+            {
+                isInjected = value;
+                if (value)
+                {
+                    Subscribe();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the header with elements made to match the theme. With none, only the list remains, for
+        /// when something around it, such as a tab, already names it.
+        /// </summary>
+        public void SetHeader(params UIElement[] elements)
+        {
+            HeaderHost.Children.Clear();
+            foreach (var element in elements)
+            {
+                HeaderHost.Children.Add(element);
+            }
+        }
 
         public GameCollectionsControl(CollectionManager manager, GameCollectionsSettingsViewModel settings, Action<Guid> openCollection)
         {
@@ -76,15 +103,30 @@ namespace GameCollections.Views
             // Subscribed only while shown, so a control the theme discards doesn't stay alive through these events.
             Loaded += (s, e) =>
             {
-                manager.CollectionsChanged += Manager_CollectionsChanged;
-                settings.SettingsChanged += Settings_SettingsChanged;
+                Subscribe();
                 UpdateItems();
             };
             Unloaded += (s, e) =>
             {
-                manager.CollectionsChanged -= Manager_CollectionsChanged;
-                settings.SettingsChanged -= Settings_SettingsChanged;
+                if (!IsInjected)
+                {
+                    Unsubscribe();
+                }
             };
+        }
+
+        private void Subscribe()
+        {
+            // Removing first keeps this safe to call more than once.
+            Unsubscribe();
+            manager.CollectionsChanged += Manager_CollectionsChanged;
+            settings.SettingsChanged += Settings_SettingsChanged;
+        }
+
+        private void Unsubscribe()
+        {
+            manager.CollectionsChanged -= Manager_CollectionsChanged;
+            settings.SettingsChanged -= Settings_SettingsChanged;
         }
 
         public override void GameContextChanged(Game oldContext, Game newContext)

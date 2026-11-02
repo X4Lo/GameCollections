@@ -89,6 +89,9 @@ Click one to open it in a window, where **Open in Collections** takes you to its
 In the extension's settings:
 
 - **Show collections in details view** turns the automatic list on or off.
+- **Use special placement for Stardust, Nova X, Helium and Harmony** (off by default) is a temporary fix for these
+  themes, whose layouts don't have a normal spot for the list. It goes next to their Game Relations section: as a
+  **Collections** tab in Harmony's Details view, a section in the others, and at the end of the panel in Grid view.
 - **Display dynamic collections in details view** lists dynamic collections as well as manual ones.
 
 The list is added to the theme's layout automatically, because Playnite has no official way to do this. It needs the
@@ -103,13 +106,16 @@ not show it. List view has no details panel, so it doesn't appear there. Theme a
 - **Search** the collection's games by name.
 - **Sort** by collection order (the order you arranged, or the order games were added), name, release date,
   last played, time played or date added, ascending or descending.
+- **Group by** shows the games in labelled groups, such as by platform, series, genre or release year. Each collection
+  remembers its own choice. A game with several values, such as two genres, appears in each group. Games with no
+  value go in a **Not set** group at the end.
 - **Installed only** hides games that aren't installed (uninstalled games are dimmed otherwise).
 - For each game (right-click, or keyboard):
   - **Play** / **Install** – double-click or **Enter**.
   - **Show in library** – selects the game in Playnite's library view.
   - **Remove from collection** – **Delete**. Works on several selected games at once (Ctrl/Shift-click).
     Not available in dynamic collections.
-- **Reorder** while sorted by collection order, ascending: drag games (several at once if selected), use
+- **Reorder** while sorted by collection order, ascending, with no grouping: drag games (several at once if selected), use
   **Move to top / earlier / later / to end** in the right-click menu, or press **Alt+arrow keys**.
 
 ## Where data is stored

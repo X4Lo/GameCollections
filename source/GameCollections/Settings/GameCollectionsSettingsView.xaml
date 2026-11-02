@@ -12,6 +12,13 @@
                    Foreground="{DynamicResource TextBrushDarker}"
                    TextWrapping="Wrap" Margin="0,4,0,16"
                    Text="{DynamicResource LOCGameCollections_SettingAddListToAnyThemeHint}" />
+        <CheckBox IsChecked="{Binding Settings.UseThemeSpecificPlacement}"
+                  IsEnabled="{Binding Settings.AddDetailsListToAnyTheme}"
+                  Content="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacement}" />
+        <TextBlock Style="{StaticResource BaseTextBlockStyle}"
+                   Foreground="{DynamicResource TextBrushDarker}"
+                   TextWrapping="Wrap" Margin="0,4,0,16"
+                   Text="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacementHint}" />
         <CheckBox IsChecked="{Binding Settings.ShowDynamicCollectionsInDetails}"
                   Content="{DynamicResource LOCGameCollections_SettingShowDynamicInDetails}" />
         <TextBlock Style="{StaticResource BaseTextBlockStyle}"
