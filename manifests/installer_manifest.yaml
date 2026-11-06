@@ -1,5 +1,15 @@
 AddonId: GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54
 Packages:
+  - Version: 1.3.0
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-11-06
+    PackageUrl: https://github.com/X4Lo/GameCollections/releases/download/v1.3.0/GameCollections_3f6b8d2e-5c41-4a7e-9e0b-6d2f1a8c7b54_1_3_0.pext
+    Changelog:
+      - 'Added: Collapse a collection page''s header to just its title, game count and dynamic badge'
+      - 'Added: Collapse or expand each group on a collection page, or all of them at once'
+      - 'Added: Slider to change the size of the game cards on a collection page'
+      - 'Added: Translations through Crowdin'
+      - 'Fixed: Search box on a collection page taller than the dropdowns next to it'
   - Version: 1.2.0
     RequiredApiVersion: 6.11.0
     ReleaseDate: 2026-11-02

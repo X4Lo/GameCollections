@@ -1,0 +1,12 @@
+# Crowdin configuration, used by the Crowdin workflow (.github/workflows/crowdin.yml) and the Crowdin CLI.
+# The project ID and API token come from environment variables, never from this file.
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+preserve_hierarchy: true
+
+files:
+  # Playnite loads Localization/<language>.xaml from the plugin folder, using names such as de_DE and pt_BR,
+  # and falls back to en_US for any string a translation is missing.
+  - source: /source/GameCollections/Localization/en_US.xaml
+    translation: /source/GameCollections/Localization/%locale_with_underscore%.xaml

@@ -286,7 +286,24 @@ Before a release, check these by hand in Playnite:
 
 - `ApplicationMode` other than Desktop is untested, and the views need Desktop theme styles.
 - A search of the library in the rule preview runs on the UI thread. Very large libraries could feel it while editing.
-- Only `en_US` strings exist so far.
+- Translations come from Crowdin, so a release only includes the languages that were merged before it was built.
+
+## Translations
+
+`Localization/en_US.xaml` is the only file edited by hand. Everything else in `Localization/` comes from
+[Crowdin](https://crowdin.com/project/game-collections) and is overwritten on every sync, so never edit it here.
+
+- [`crowdin.yml`](../crowdin.yml) maps `en_US.xaml` to `Localization/<locale>.xaml`, using Crowdin's
+  `%locale_with_underscore%` names (`de_DE`, `pt_BR`, `zh_CN`). These are the names Playnite looks for.
+- Playnite loads `en_US.xaml` first, then the file for the user's language on top of it, so a missing string falls
+  back to English. The plugin needs no code for this; the files only have to be copied to the output folder, which
+  `GameCollections.csproj` does for every `Localization\*.xaml`.
+- The [Crowdin workflow](../.github/workflows/crowdin.yml) uploads `en_US.xaml` whenever it changes on `master`, and
+  every Monday (or when run by hand from the Actions tab) opens a pull request from `l10n_crowdin` with the latest
+  translations. Merge it before building a release.
+- It needs the `CROWDIN_PROJECT_ID` and `CROWDIN_PERSONAL_TOKEN` repository secrets.
+- When you add or change a key, change only `en_US.xaml`. Crowdin marks changed strings for re-translation, and
+  removed keys disappear from the translations on the next sync.
 
 ## Releasing
 

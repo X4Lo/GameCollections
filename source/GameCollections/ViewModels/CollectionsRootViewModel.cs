@@ -34,11 +34,14 @@ namespace GameCollections.ViewModels
         public GameSortField GameSortField { get; set; } = GameSortField.CollectionOrder;
         public bool GameSortDescending { get; set; }
 
+        public GameCollectionsSettingsViewModel Settings { get; }
+
         public CollectionsRootViewModel(IPlayniteAPI playniteApi, CollectionManager manager, DialogService dialogs, GameCollectionsSettingsViewModel settings)
         {
             this.playniteApi = playniteApi;
             this.manager = manager;
             this.dialogs = dialogs;
+            Settings = settings;
             Home = new CollectionsHomeViewModel(manager, this, settings);
             CurrentPage = Home;
             manager.CollectionsChanged += OnCollectionsChanged;

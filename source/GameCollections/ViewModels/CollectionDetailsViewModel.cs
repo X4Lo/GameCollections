@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace GameCollections.ViewModels
 {
@@ -238,11 +239,73 @@ namespace GameCollections.ViewModels
             set
             {
                 manager.SetGroupBy(CollectionId, value);
+                collapsedGroups.Clear();
                 ApplyGrouping();
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsGrouped));
                 RaiseReorderChanged();
             }
         }
+
+        public bool IsGrouped => GroupBy != GameGroupField.None;
+
+        // Names of the groups the user has collapsed. Kept by name so the state survives the
+        // groups being rebuilt when the search or filters change.
+        private readonly HashSet<string> collapsedGroups = new HashSet<string>();
+
+        /// <summary>
+        /// Raised when groups are collapsed or expanded from the view model, so the view can update its expanders.
+        /// </summary>
+        public event EventHandler GroupExpansionChanged;
+
+        private IEnumerable<string> GroupNames => GamesView.Groups?.Cast<CollectionViewGroup>().Select(g => (string)g.Name) ?? Enumerable.Empty<string>();
+        public bool AllGroupsCollapsed => IsGrouped && GroupNames.Any() && GroupNames.All(collapsedGroups.Contains);
+        public string ToggleAllGroupsText => Loc.Get(AllGroupsCollapsed ? "LOCGameCollections_ExpandAllGroups" : "LOCGameCollections_CollapseAllGroups");
+
+        /// <summary>
+        /// Hides the poster, description and buttons, leaving the title, game count and dynamic badge.
+        /// Shared by all collection pages and remembered between sessions.
+        /// </summary>
+        public bool IsHeaderCollapsed
+        {
+            get => root.Settings.Settings.CollectionHeaderCollapsed;
+            set
+            {
+                root.Settings.Settings.CollectionHeaderCollapsed = value;
+                root.Settings.Save();
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HeaderToggleGlyph));
+                OnPropertyChanged(nameof(HeaderToggleTooltip));
+            }
+        }
+
+        public string HeaderToggleGlyph => IsHeaderCollapsed ? DescendingGlyph : AscendingGlyph;
+        public string HeaderToggleTooltip => Loc.Get(IsHeaderCollapsed ? "LOCGameCollections_ExpandHeader" : "LOCGameCollections_CollapseHeader");
+
+        public const double MinCardWidth = 80;
+        public const double MaxCardWidth = 260;
+        private const double CardAspectRatio = 1.5;
+
+        /// <summary>
+        /// Width of the game cards, set with the size slider. Shared by all collection pages.
+        /// </summary>
+        public double CardWidth
+        {
+            get => Math.Max(MinCardWidth, Math.Min(MaxCardWidth, root.Settings.Settings.GameCardWidth));
+            set
+            {
+                root.Settings.Settings.GameCardWidth = Math.Max(MinCardWidth, Math.Min(MaxCardWidth, value));
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CardHeight));
+                // The slider changes the value many times a second, so the settings file is written once it settles.
+                cardSizeSaveTimer.Stop();
+                cardSizeSaveTimer.Start();
+            }
+        }
+
+        public double CardHeight => CardWidth * CardAspectRatio;
+
+        private readonly DispatcherTimer cardSizeSaveTimer;
 
         public bool IsEmpty => Games.Count == 0;
         public bool HasNoResults => !IsEmpty && GamesView.Count == 0;
@@ -260,6 +323,8 @@ namespace GameCollections.ViewModels
         public RelayCommand PlaySelectedCommand { get; }
         public RelayCommand RefreshCommand { get; }
         public RelayCommand OpenInCollectionsCommand { get; }
+        public RelayCommand ToggleHeaderCommand { get; }
+        public RelayCommand ToggleAllGroupsCommand { get; }
 
         public CollectionDetailsViewModel(IPlayniteAPI playniteApi, CollectionManager manager, CollectionsRootViewModel root, CollectionCardViewModel header)
         {
@@ -267,6 +332,13 @@ namespace GameCollections.ViewModels
             this.manager = manager;
             this.root = root;
             Header = header;
+
+            cardSizeSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            cardSizeSaveTimer.Tick += (s, e) =>
+            {
+                cardSizeSaveTimer.Stop();
+                root.Settings.Save();
+            };
 
             GamesView = new ListCollectionView(Games) { Filter = FilterGame };
             ApplySort();
@@ -289,6 +361,8 @@ namespace GameCollections.ViewModels
             PlaySelectedCommand = new RelayCommand(PlaySelected);
             RefreshCommand = new RelayCommand(() => manager.RefreshCollection(CollectionId));
             OpenInCollectionsCommand = new RelayCommand(() => root.ShowInCollectionsSection(CollectionId));
+            ToggleHeaderCommand = new RelayCommand(() => IsHeaderCollapsed = !IsHeaderCollapsed);
+            ToggleAllGroupsCommand = new RelayCommand(ToggleAllGroups);
 
             Reload();
         }
@@ -448,6 +522,54 @@ namespace GameCollections.ViewModels
             return selected.Contains(tile) ? selected : new List<CollectionGameViewModel> { tile };
         }
 
+        public bool IsGroupCollapsed(object groupName)
+        {
+            return groupName is string name && collapsedGroups.Contains(name);
+        }
+
+        /// <summary>
+        /// Records a group being collapsed or expanded by its own header.
+        /// </summary>
+        public void SetGroupCollapsed(object groupName, bool collapsed)
+        {
+            if (!(groupName is string name))
+            {
+                return;
+            }
+
+            if (collapsed)
+            {
+                collapsedGroups.Add(name);
+            }
+            else
+            {
+                collapsedGroups.Remove(name);
+            }
+
+            RaiseGroupStateChanged();
+        }
+
+        private void ToggleAllGroups()
+        {
+            if (AllGroupsCollapsed)
+            {
+                collapsedGroups.Clear();
+            }
+            else
+            {
+                collapsedGroups.UnionWith(GroupNames);
+            }
+
+            GroupExpansionChanged?.Invoke(this, EventArgs.Empty);
+            RaiseGroupStateChanged();
+        }
+
+        private void RaiseGroupStateChanged()
+        {
+            OnPropertyChanged(nameof(AllGroupsCollapsed));
+            OnPropertyChanged(nameof(ToggleAllGroupsText));
+        }
+
         private void RaiseReorderChanged()
         {
             OnPropertyChanged(nameof(CanReorder));
@@ -535,6 +657,7 @@ namespace GameCollections.ViewModels
             OnPropertyChanged(nameof(IsEmpty));
             OnPropertyChanged(nameof(HasNoResults));
             OnPropertyChanged(nameof(VisibleCountText));
+            RaiseGroupStateChanged();
         }
 
         private class GameTileComparer : IComparer

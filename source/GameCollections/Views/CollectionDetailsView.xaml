@@ -41,8 +41,9 @@
             </Style>
 
             <DataTemplate x:Key="GameTemplate" DataType="{x:Type vm:CollectionGameViewModel}">
-                <StackPanel Width="130">
-                    <Grid Width="130" Height="195">
+                <!-- Sized by the card size slider on the page. -->
+                <StackPanel Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType=ListBox}}">
+                    <Grid Height="{Binding DataContext.CardHeight, RelativeSource={RelativeSource AncestorType=ListBox}}">
                         <local:PosterImage GlyphSize="40" Glyph="&#xea30;" Source="{Binding Cover}" />
                         <!-- Dim games that are not installed, as Playnite's own grid does. -->
                         <Border Background="#80000000" CornerRadius="4" IsHitTestVisible="False"
@@ -69,25 +70,38 @@
         </Button>
 
         <!-- Collection header -->
+        <!-- Collapsing it leaves only the title, game count and dynamic badge. -->
         <Grid DockPanel.Dock="Top" Margin="0,15,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <local:PosterImage Width="140" Height="210" GlyphSize="52" Source="{Binding Header.Poster}" VerticalAlignment="Top" />
-            <StackPanel Grid.Column="1" Margin="20,0,0,0">
+            <local:PosterImage Width="140" Height="210" GlyphSize="52" Source="{Binding Header.Poster}" VerticalAlignment="Top"
+                               Margin="0,0,20,0"
+                               Visibility="{Binding IsHeaderCollapsed, Converter={StaticResource InverseBoolToVisibility}}" />
+            <Button Grid.Column="2" Style="{StaticResource GcIconButton}" VerticalAlignment="Top" Margin="10,0,0,0"
+                    Content="{Binding HeaderToggleGlyph}"
+                    Command="{Binding ToggleHeaderCommand}"
+                    ToolTip="{Binding HeaderToggleTooltip}"
+                    AutomationProperties.Name="{Binding HeaderToggleTooltip}" />
+            <StackPanel Grid.Column="1">
                 <TextBlock Text="{Binding Header.Title}" Style="{StaticResource GcPageTitleText}" TextWrapping="Wrap" />
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <TextBlock Text="&#xf000;" Style="{StaticResource GcGlyph}"
-                               Foreground="{DynamicResource GlyphBrush}" Margin="0,0,5,0" />
-                    <TextBlock Text="{Binding Header.RatingText}" Style="{StaticResource GcText}" />
-                    <TextBlock Text="•" Style="{StaticResource GcMutedText}" Margin="10,0" />
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding IsHeaderCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
+                        <TextBlock Text="&#xf000;" Style="{StaticResource GcGlyph}"
+                                   Foreground="{DynamicResource GlyphBrush}" Margin="0,0,5,0" />
+                        <TextBlock Text="{Binding Header.RatingText}" Style="{StaticResource GcText}" />
+                        <TextBlock Text="•" Style="{StaticResource GcMutedText}" Margin="10,0" />
+                    </StackPanel>
                     <TextBlock Text="{Binding Header.GameCountText}" Style="{StaticResource GcMutedText}" />
                     <Border Style="{StaticResource GcBadge}" Margin="10,0,0,0"
                             Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
                         <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
                     </Border>
                 </StackPanel>
+                <StackPanel Visibility="{Binding IsHeaderCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
                 <TextBlock Text="{Binding RulesSummary}" Style="{StaticResource GcMutedText}"
                            TextWrapping="Wrap" Margin="0,8,0,0"
                            Visibility="{Binding RulesSummary, Converter={StaticResource HasValueToVisibility}}" />
@@ -125,26 +139,42 @@
                         </StackPanel>
                     </Button>
                 </WrapPanel>
+                </StackPanel>
             </StackPanel>
         </Grid>
 
-        <!-- Toolbar: search, sort, filter -->
+        <!-- Toolbar: search, sort, group, filter. The search box and buttons take the dropdowns'
+             height, which comes from the theme, so the row lines up in any theme. -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
             <TextBlock DockPanel.Dock="Right" Text="{Binding VisibleCountText}" Style="{StaticResource GcMutedText}"
-                       VerticalAlignment="Top" Margin="10,8,0,0" />
+                       VerticalAlignment="Top" Margin="16,8,0,0" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="16,0,0,0"
+                        Height="{Binding ActualHeight, ElementName=SortCombo}">
+                <TextBlock Text="{DynamicResource LOCGameCollections_CardSize}" Style="{StaticResource GcText}"
+                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                <Slider Width="110" VerticalAlignment="Center"
+                        Minimum="{x:Static vm:CollectionDetailsViewModel.MinCardWidth}"
+                        Maximum="{x:Static vm:CollectionDetailsViewModel.MaxCardWidth}"
+                        SmallChange="10" LargeChange="30"
+                        Value="{Binding CardWidth}"
+                        ToolTip="{DynamicResource LOCGameCollections_CardSize}"
+                        AutomationProperties.Name="{DynamicResource LOCGameCollections_CardSize}" />
+            </StackPanel>
             <WrapPanel Orientation="Horizontal">
-            <local:SearchBox Width="240" Height="32" Margin="0,0,0,4"
+            <local:SearchBox Width="240" Margin="0,0,0,4" VerticalAlignment="Center"
+                             Height="{Binding ActualHeight, ElementName=SortCombo}"
                              Text="{Binding SearchText}"
                              Placeholder="{DynamicResource LOCGameCollections_SearchGames}" />
             <TextBlock Text="{DynamicResource LOCGameCollections_SortBy}" Style="{StaticResource GcText}"
                        VerticalAlignment="Center" Margin="16,0,8,0" />
-            <ComboBox MinWidth="150" VerticalAlignment="Center"
+            <ComboBox x:Name="SortCombo" MinWidth="150" VerticalAlignment="Center"
                       ItemsSource="{Binding SortOptions}"
                       DisplayMemberPath="Label"
                       SelectedValuePath="Field"
                       SelectedValue="{Binding SortField}"
                       AutomationProperties.Name="{DynamicResource LOCGameCollections_SortBy}" />
-            <Button Style="{StaticResource GcIconButton}" Height="32" Margin="5,0,0,0"
+            <Button Style="{StaticResource GcIconButton}" Margin="5,0,0,0"
+                    Height="{Binding ActualHeight, ElementName=SortCombo}"
                     Content="{Binding SortDirectionGlyph}"
                     Command="{Binding ToggleSortDirectionCommand}"
                     ToolTip="{Binding SortDirectionTooltip}"
@@ -157,6 +187,11 @@
                       SelectedValuePath="Field"
                       SelectedValue="{Binding GroupBy}"
                       AutomationProperties.Name="{DynamicResource LOCGameCollections_GroupBy}" />
+            <Button Style="{StaticResource GcButton}" Margin="5,0,0,0" Padding="10,0"
+                    Height="{Binding ActualHeight, ElementName=SortCombo}"
+                    Content="{Binding ToggleAllGroupsText}"
+                    Command="{Binding ToggleAllGroupsCommand}"
+                    Visibility="{Binding IsGrouped, Converter={StaticResource BoolToVisibility}}" />
             <CheckBox VerticalAlignment="Center" Margin="16,0,0,0"
                       IsChecked="{Binding InstalledOnly}"
                       Content="{DynamicResource LOCGameCollections_InstalledOnly}" />
@@ -183,17 +218,33 @@
                      SizeChanged="GamesList_SizeChanged"
                      AutomationProperties.Name="{Binding Header.Title}">
                 <ListBox.GroupStyle>
+                    <!-- Each group is an expander so it can be collapsed. Its state is kept by the
+                         view model and applied in GroupExpander_Loaded. -->
                     <GroupStyle>
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
-                                    <TextBlock Text="{Binding Name}" Style="{StaticResource GcItemTitleText}"
-                                               FontSize="{DynamicResource FontSizeLarge}" />
-                                    <TextBlock Text="{Binding ItemCount}" Style="{StaticResource GcMutedText}"
-                                               VerticalAlignment="Center" Margin="8,0,0,0" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="GroupItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="GroupItem">
+                                            <Expander IsExpanded="True" Margin="0,0,0,8"
+                                                      Loaded="GroupExpander_Loaded"
+                                                      Expanded="GroupExpander_Toggled"
+                                                      Collapsed="GroupExpander_Toggled">
+                                                <Expander.Header>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
+                                                        <TextBlock Text="{Binding Name}" Style="{StaticResource GcItemTitleText}"
+                                                                   FontSize="{DynamicResource FontSizeLarge}" />
+                                                        <TextBlock Text="{Binding ItemCount}" Style="{StaticResource GcMutedText}"
+                                                                   VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    </StackPanel>
+                                                </Expander.Header>
+                                                <ItemsPresenter Margin="0,8,0,0" />
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
                     </GroupStyle>
                 </ListBox.GroupStyle>
                 <ListBox.ItemsPanel>

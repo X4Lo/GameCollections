@@ -103,12 +103,19 @@ not show it. List view has no details panel, so it doesn't appear there. Theme a
 
 - Header with poster, title, rating, game count and description, plus **Edit**, **Select in library** and **Delete**.
   Dynamic collections also show their rules and a **Refresh now** button.
+- The arrow button at the header's top right **collapses the header** to just the title, game count and Dynamic badge,
+  leaving more room for games. Press it again to expand it. This is remembered for all collections.
 - **Search** the collection's games by name.
 - **Sort** by collection order (the order you arranged, or the order games were added), name, release date,
   last played, time played or date added, ascending or descending.
 - **Group by** shows the games in labelled groups, such as by platform, series, genre or release year. Each collection
   remembers its own choice. A game with several values, such as two genres, appears in each group. Games with no
   value go in a **Not set** group at the end.
+  - Click a group's header to collapse or expand it, or use **Collapse all** / **Expand all** next to Group by.
+    Collapsed groups reset when you leave the page or change the grouping.
+  - Collapsing a group deselects its games, unless they also appear in a group that's still open.
+- **Card size**, the slider at the right of the toolbar, makes the game cards bigger or smaller. It's remembered for
+  all collections.
 - **Installed only** hides games that aren't installed (uninstalled games are dimmed otherwise).
 - For each game (right-click, or keyboard):
   - **Play** / **Install** – double-click or **Enter**.

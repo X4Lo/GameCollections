@@ -12,6 +12,13 @@ namespace GameCollections.Settings
         private CollectionsViewMode viewMode = CollectionsViewMode.Grid;
         public CollectionsViewMode ViewMode { get => viewMode; set => SetValue(ref viewMode, value); }
 
+        // Also remembered UI state: the collection page's header and the size of its game cards.
+        private bool collectionHeaderCollapsed;
+        public bool CollectionHeaderCollapsed { get => collectionHeaderCollapsed; set => SetValue(ref collectionHeaderCollapsed, value); }
+
+        private double gameCardWidth = 130;
+        public double GameCardWidth { get => gameCardWidth; set => SetValue(ref gameCardWidth, value); }
+
         private bool showDynamicCollectionsInDetails = true;
         public bool ShowDynamicCollectionsInDetails { get => showDynamicCollectionsInDetails; set => SetValue(ref showDynamicCollectionsInDetails, value); }
 

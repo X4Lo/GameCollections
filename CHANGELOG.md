@@ -3,6 +3,14 @@
 Every release must also be added to [manifests/installer_manifest.yaml](manifests/installer_manifest.yaml),
 which is what Playnite reads to offer updates.
 
+## 1.3.0 – 2026-11-06
+
+- Added: Collapse a collection page's header to just its title, game count and dynamic badge.
+- Added: Collapse or expand each group on a collection page, or all of them at once.
+- Added: Slider to change the size of the game cards on a collection page.
+- Added: Translations through Crowdin. Missing strings fall back to English.
+- Fixed: The search box on a collection page was taller than the Sort by and Group by dropdowns.
+
 ## 1.2.0 – 2026-11-02
 
 - Added: Group games on a collection's page by platform, series, genre, developer, publisher, category, feature, tag,

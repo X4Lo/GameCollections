@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -35,7 +36,7 @@ namespace GameCollections.Views
             };
 
             GamesList.SelectionChanged += (s, e) => SyncSelection();
-            DataContextChanged += (s, e) => SyncSelection();
+            DataContextChanged += OnDataContextChanged;
             Loaded += OnLoaded;
             Unloaded += (s, e) => coverTimer.Stop();
         }
@@ -54,6 +55,78 @@ namespace GameCollections.Views
             }
 
             ScheduleCoverRequest();
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is CollectionDetailsViewModel oldViewModel)
+            {
+                oldViewModel.GroupExpansionChanged -= OnGroupExpansionChanged;
+            }
+
+            if (e.NewValue is CollectionDetailsViewModel newViewModel)
+            {
+                newViewModel.GroupExpansionChanged += OnGroupExpansionChanged;
+            }
+
+            SyncSelection();
+        }
+
+        private void GroupExpander_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Groups are rebuilt whenever the search or filters change, so each one takes its state from the view model.
+            var expander = (Expander)sender;
+            if (ViewModel != null)
+            {
+                expander.IsExpanded = !ViewModel.IsGroupCollapsed((expander.DataContext as CollectionViewGroup)?.Name);
+            }
+        }
+
+        private void GroupExpander_Toggled(object sender, RoutedEventArgs e)
+        {
+            var expander = (Expander)sender;
+            if (e.OriginalSource != expander || ViewModel == null)
+            {
+                return;
+            }
+
+            ViewModel.SetGroupCollapsed((expander.DataContext as CollectionViewGroup)?.Name, !expander.IsExpanded);
+            if (expander.IsExpanded)
+            {
+                ScheduleCoverRequest();
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(new Action(DeselectHiddenGames), DispatcherPriority.Loaded);
+            }
+        }
+
+        private void OnGroupExpansionChanged(object sender, EventArgs e)
+        {
+            foreach (var expander in FindDescendants<Expander>(GamesList))
+            {
+                GroupExpander_Loaded(expander, null);
+            }
+        }
+
+        /// <summary>
+        /// Drops games that are only in collapsed groups from the selection, so Delete or Enter
+        /// never acts on a game the user can't see.
+        /// </summary>
+        private void DeselectHiddenGames()
+        {
+            if (GamesList.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            var items = new List<ListBoxItem>();
+            CollectItems(GamesList, items);
+            var shown = new HashSet<object>(items.Where(i => i.IsVisible).Select(i => i.DataContext));
+            foreach (var game in GamesList.SelectedItems.Cast<object>().Where(g => !shown.Contains(g)).ToList())
+            {
+                GamesList.SelectedItems.Remove(game);
+            }
         }
 
         private void SyncSelection()
@@ -360,6 +433,23 @@ namespace GameCollections.Views
                 else
                 {
                     CollectItems(child, items);
+                }
+            }
+        }
+
+        private static IEnumerable<T> FindDescendants<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T match)
+                {
+                    yield return match;
+                }
+
+                foreach (var nested in FindDescendants<T>(child))
+                {
+                    yield return nested;
                 }
             }
         }

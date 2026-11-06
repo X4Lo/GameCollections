@@ -154,6 +154,13 @@
     <sys:String x:Key="LOCGameCollections_GroupInstallStatus">Install status</sys:String>
     <sys:String x:Key="LOCGameCollections_GroupInstalled">Installed</sys:String>
     <sys:String x:Key="LOCGameCollections_GroupNotInstalled">Not installed</sys:String>
+    <sys:String x:Key="LOCGameCollections_CollapseAllGroups">Collapse all</sys:String>
+    <sys:String x:Key="LOCGameCollections_ExpandAllGroups">Expand all</sys:String>
+
+    <!-- Collection page layout -->
+    <sys:String x:Key="LOCGameCollections_CollapseHeader">Collapse header</sys:String>
+    <sys:String x:Key="LOCGameCollections_ExpandHeader">Expand header</sys:String>
+    <sys:String x:Key="LOCGameCollections_CardSize">Card size</sys:String>
 
     <!-- Manual order -->
     <sys:String x:Key="LOCGameCollections_MoveToTop">Move to top</sys:String>
