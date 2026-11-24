@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace GameCollections.ViewModels
@@ -284,7 +285,6 @@ namespace GameCollections.ViewModels
 
         public const double MinCardWidth = 80;
         public const double MaxCardWidth = 260;
-        private const double CardAspectRatio = 1.5;
 
         /// <summary>
         /// Width of the game cards, set with the size slider. Shared by all collection pages.
@@ -303,7 +303,28 @@ namespace GameCollections.ViewModels
             }
         }
 
-        public double CardHeight => CardWidth * CardAspectRatio;
+        public double CardHeight => CardWidth * root.Settings.Settings.GameCoverRatio;
+        public Stretch CoverStretch => root.Settings.Settings.GameCoverStretch;
+
+        // The header poster fits a box 210 high and at most 280 wide, so a wide poster doesn't take over the page.
+        private const double HeaderPosterMaxHeight = 210;
+        private const double HeaderPosterMaxWidth = 280;
+        public double HeaderPosterWidth => Math.Min(HeaderPosterMaxWidth, HeaderPosterMaxHeight / root.Settings.Settings.CollectionPosterRatio);
+        public double HeaderPosterHeight => HeaderPosterWidth * root.Settings.Settings.CollectionPosterRatio;
+        public Stretch HeaderPosterStretch => root.Settings.Settings.CollectionPosterStretch;
+
+        /// <summary>
+        /// Called after the settings are saved, so posters and covers take their new shape.
+        /// </summary>
+        public void OnDisplaySettingsChanged()
+        {
+            OnPropertyChanged(nameof(CardWidth));
+            OnPropertyChanged(nameof(CardHeight));
+            OnPropertyChanged(nameof(CoverStretch));
+            OnPropertyChanged(nameof(HeaderPosterWidth));
+            OnPropertyChanged(nameof(HeaderPosterHeight));
+            OnPropertyChanged(nameof(HeaderPosterStretch));
+        }
 
         private readonly DispatcherTimer cardSizeSaveTimer;
 

@@ -129,5 +129,11 @@ namespace GameCollections.Models
     public class DynamicRules
     {
         public List<RuleBlock> Blocks { get; set; } = new List<RuleBlock>();
+
+        /// <summary>
+        /// Whether games hidden in Playnite can match. Off by default, as it was before the option existed,
+        /// so older data files need no migration.
+        /// </summary>
+        public bool IncludeHidden { get; set; }
     }
 }

@@ -47,6 +47,16 @@ namespace GameCollections.ViewModels
             manager.CollectionsChanged += OnCollectionsChanged;
         }
 
+        /// <summary>
+        /// Passes saved settings on to the open pages. A collection's own window is modal, so the
+        /// settings can't change while it's open.
+        /// </summary>
+        public void OnDisplaySettingsChanged()
+        {
+            Home.OnDisplaySettingsChanged();
+            (CurrentPage as CollectionDetailsViewModel)?.OnDisplaySettingsChanged();
+        }
+
         public void ShowHome()
         {
             CurrentPage = Home;

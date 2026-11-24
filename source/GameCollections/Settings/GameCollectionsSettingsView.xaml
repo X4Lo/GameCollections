@@ -4,26 +4,121 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="200" d:DesignWidth="600">
-    <StackPanel Margin="20">
-        <CheckBox IsChecked="{Binding Settings.AddDetailsListToAnyTheme}"
-                  Content="{DynamicResource LOCGameCollections_SettingAddListToAnyTheme}" />
-        <TextBlock Style="{StaticResource BaseTextBlockStyle}"
-                   Foreground="{DynamicResource TextBrushDarker}"
-                   TextWrapping="Wrap" Margin="0,4,0,16"
-                   Text="{DynamicResource LOCGameCollections_SettingAddListToAnyThemeHint}" />
-        <CheckBox IsChecked="{Binding Settings.UseThemeSpecificPlacement}"
-                  IsEnabled="{Binding Settings.AddDetailsListToAnyTheme}"
-                  Content="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacement}" />
-        <TextBlock Style="{StaticResource BaseTextBlockStyle}"
-                   Foreground="{DynamicResource TextBrushDarker}"
-                   TextWrapping="Wrap" Margin="0,4,0,16"
-                   Text="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacementHint}" />
-        <CheckBox IsChecked="{Binding Settings.ShowDynamicCollectionsInDetails}"
-                  Content="{DynamicResource LOCGameCollections_SettingShowDynamicInDetails}" />
-        <TextBlock Style="{StaticResource BaseTextBlockStyle}"
-                   Foreground="{DynamicResource TextBrushDarker}"
-                   TextWrapping="Wrap" Margin="0,4,0,0"
-                   Text="{DynamicResource LOCGameCollections_SettingShowDynamicInDetailsHint}" />
-    </StackPanel>
+             d:DesignHeight="600" d:DesignWidth="600">
+    <UserControl.Resources>
+        <Style x:Key="SectionTitle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushDarker}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+        </Style>
+        <Style x:Key="AspectBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="50" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <!-- Sidebar -->
+            <TextBlock Text="{DynamicResource LOCGameCollections_SettingSectionSidebar}" Style="{StaticResource SectionTitle}" />
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{DynamicResource LOCGameCollections_SettingSidebarIcon}" Style="{StaticResource Label}" />
+                <ComboBox MinWidth="140"
+                          ItemsSource="{Binding SidebarIconOptions}"
+                          DisplayMemberPath="Label"
+                          SelectedValuePath="Value"
+                          SelectedValue="{Binding Settings.SidebarIcon}"
+                          AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingSidebarIcon}" />
+            </StackPanel>
+
+            <!-- Collections page -->
+            <TextBlock Text="{DynamicResource LOCGameCollections_SettingSectionCollectionPosters}" Style="{StaticResource SectionTitle}" Margin="0,24,0,10" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{DynamicResource LOCGameCollections_SettingAspectRatio}" Style="{StaticResource Label}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBox Style="{StaticResource AspectBox}" Text="{Binding Settings.CollectionPosterAspectWidth}"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingAspectWidth}" />
+                    <TextBlock Text=":" Style="{StaticResource Label}" Margin="6,0" />
+                    <TextBox Style="{StaticResource AspectBox}" Text="{Binding Settings.CollectionPosterAspectHeight}"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingAspectHeight}" />
+                    <Button Content="{DynamicResource LOCGameCollections_AspectPresets}" Tag="Collection" Margin="10,0,0,0"
+                            VerticalAlignment="Center" Click="PresetsButton_Click" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Text="{DynamicResource LOCGameCollections_SettingStretchMode}" Style="{StaticResource Label}" Margin="0,8,10,0" />
+                <ComboBox Grid.Row="1" Grid.Column="1" MinWidth="140" HorizontalAlignment="Left" Margin="0,8,0,0"
+                          ItemsSource="{Binding StretchOptions}"
+                          DisplayMemberPath="Label"
+                          SelectedValuePath="Value"
+                          SelectedValue="{Binding Settings.CollectionPosterStretch}"
+                          AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingStretchMode}" />
+            </Grid>
+            <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,0"
+                       Text="{DynamicResource LOCGameCollections_SettingCollectionPostersHint}" />
+
+            <!-- Games on a collection's page -->
+            <TextBlock Text="{DynamicResource LOCGameCollections_SettingSectionGameCovers}" Style="{StaticResource SectionTitle}" Margin="0,24,0,10" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{DynamicResource LOCGameCollections_SettingAspectRatio}" Style="{StaticResource Label}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBox Style="{StaticResource AspectBox}" Text="{Binding Settings.GameCoverAspectWidth}"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingAspectWidth}" />
+                    <TextBlock Text=":" Style="{StaticResource Label}" Margin="6,0" />
+                    <TextBox Style="{StaticResource AspectBox}" Text="{Binding Settings.GameCoverAspectHeight}"
+                             AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingAspectHeight}" />
+                    <Button Content="{DynamicResource LOCGameCollections_AspectPresets}" Tag="Game" Margin="10,0,0,0"
+                            VerticalAlignment="Center" Click="PresetsButton_Click" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Text="{DynamicResource LOCGameCollections_SettingStretchMode}" Style="{StaticResource Label}" Margin="0,8,10,0" />
+                <ComboBox Grid.Row="1" Grid.Column="1" MinWidth="140" HorizontalAlignment="Left" Margin="0,8,0,0"
+                          ItemsSource="{Binding StretchOptions}"
+                          DisplayMemberPath="Label"
+                          SelectedValuePath="Value"
+                          SelectedValue="{Binding Settings.GameCoverStretch}"
+                          AutomationProperties.Name="{DynamicResource LOCGameCollections_SettingStretchMode}" />
+            </Grid>
+            <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,0"
+                       Text="{DynamicResource LOCGameCollections_SettingGameCoversHint}" />
+
+            <!-- Game details view -->
+            <TextBlock Text="{DynamicResource LOCGameCollections_SettingSectionDetails}" Style="{StaticResource SectionTitle}" Margin="0,24,0,10" />
+            <CheckBox IsChecked="{Binding Settings.AddDetailsListToAnyTheme}"
+                      Content="{DynamicResource LOCGameCollections_SettingAddListToAnyTheme}" />
+            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,16"
+                       Text="{DynamicResource LOCGameCollections_SettingAddListToAnyThemeHint}" />
+            <CheckBox IsChecked="{Binding Settings.UseThemeSpecificPlacement}"
+                      IsEnabled="{Binding Settings.AddDetailsListToAnyTheme}"
+                      Content="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacement}" />
+            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,16"
+                       Text="{DynamicResource LOCGameCollections_SettingThemeSpecificPlacementHint}" />
+            <CheckBox IsChecked="{Binding Settings.ShowDynamicCollectionsInDetails}"
+                      Content="{DynamicResource LOCGameCollections_SettingShowDynamicInDetails}" />
+            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0"
+                       Text="{DynamicResource LOCGameCollections_SettingShowDynamicInDetailsHint}" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

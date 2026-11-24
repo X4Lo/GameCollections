@@ -38,11 +38,13 @@
                 <EventSetter Event="MouseDoubleClick" Handler="RowItem_MouseDoubleClick" />
             </Style>
 
-            <!-- Grid card: fixed size so every card lines up regardless of its content. -->
+            <!-- Grid card: fixed size so every card lines up regardless of its content. The poster's
+                 height and stretch come from the settings, through the page's view model. -->
             <DataTemplate x:Key="CardTemplate" DataType="{x:Type vm:CollectionCardViewModel}">
                 <StackPanel Width="170">
-                    <Grid Width="170" Height="255">
-                        <local:PosterImage GlyphSize="56" Source="{Binding Poster}" />
+                    <Grid Width="170" Height="{Binding DataContext.CardPosterHeight, RelativeSource={RelativeSource AncestorType=ListBox}}">
+                        <local:PosterImage GlyphSize="56" Source="{Binding Poster}"
+                                           Stretch="{Binding DataContext.PosterStretch, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                         <Border Style="{StaticResource GcBadge}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6"
                             Visibility="{Binding IsDynamic, Converter={StaticResource BoolToVisibility}}">
                         <TextBlock Text="{DynamicResource LOCGameCollections_DynamicBadge}" Style="{StaticResource GcBadgeText}" />
@@ -77,7 +79,10 @@
                         <ColumnDefinition Width="100" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <local:PosterImage Width="48" Height="72" GlyphSize="22" CornerRadius="3" Source="{Binding Poster}" />
+                    <local:PosterImage GlyphSize="22" CornerRadius="3" Source="{Binding Poster}" VerticalAlignment="Center"
+                                       Width="{Binding DataContext.RowPosterWidth, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                       Height="{Binding DataContext.RowPosterActualHeight, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                       Stretch="{Binding DataContext.PosterStretch, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                     <StackPanel Grid.Column="1" Margin="14,0,10,0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding Title}" Style="{StaticResource GcItemTitleText}" />

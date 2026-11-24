@@ -491,10 +491,22 @@ namespace GameCollections.ViewModels
 
         public RelayCommand AddBlockCommand { get; }
 
+        private bool includeHidden;
+        public bool IncludeHidden
+        {
+            get => includeHidden;
+            set
+            {
+                SetValue(ref includeHidden, value);
+                OnRulesChanged();
+            }
+        }
+
         public DynamicRulesViewModel(IPlayniteAPI playniteApi, DynamicRules source)
         {
             this.playniteApi = playniteApi;
             ruleText = new RuleText(playniteApi);
+            includeHidden = source?.IncludeHidden ?? false;
             AddBlockCommand = new RelayCommand(AddBlock);
 
             // Waits for a pause in typing, so the library isn't searched on every keystroke.
@@ -524,7 +536,7 @@ namespace GameCollections.ViewModels
 
         public DynamicRules ToModel()
         {
-            return new DynamicRules { Blocks = Blocks.Select(b => b.ToModel()).ToList() };
+            return new DynamicRules { Blocks = Blocks.Select(b => b.ToModel()).ToList(), IncludeHidden = includeHidden };
         }
 
         public void OnRulesChanged()

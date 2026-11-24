@@ -3,6 +3,14 @@
 Every release must also be added to [manifests/installer_manifest.yaml](manifests/installer_manifest.yaml),
 which is what Playnite reads to offer updates.
 
+## 1.4.0 – 2026-11-24
+
+- Changed: The sidebar icon now matches the theme's other icons, including their hover and selected shades. The
+  colored icon, and fixed white and black versions, can be chosen in the settings.
+- Added: Settings for the aspect ratio and stretch mode of collection posters and of game covers on a collection's
+  page, with presets for common cover shapes such as Steam, GOG Galaxy and DVD boxes.
+- Added: Option to include hidden games in a dynamic collection. They're still left out by default.
+
 ## 1.3.0 – 2026-11-06
 
 - Added: Collapse a collection page's header to just its title, game count and dynamic badge.

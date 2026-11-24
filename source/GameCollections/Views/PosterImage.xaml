@@ -7,7 +7,8 @@
     <Grid>
         <Border CornerRadius="{Binding CornerRadius, ElementName=Root}"
                 Background="{DynamicResource NormalBrush}">
-            <TextBlock Text="{Binding Glyph, ElementName=Root}"
+            <TextBlock x:Name="PlaceholderGlyph"
+                       Text="{Binding Glyph, ElementName=Root}"
                        FontFamily="{DynamicResource FontIcoFont}"
                        FontSize="{Binding GlyphSize, ElementName=Root}"
                        Foreground="{DynamicResource GlyphBrush}"

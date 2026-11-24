@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace GameCollections.ViewModels
 {
@@ -45,6 +46,28 @@ namespace GameCollections.ViewModels
         public bool IsListView => !IsGridView;
         public string ViewModeToggleGlyph => IsGridView ? ListGlyph : GridGlyph;
         public string ViewModeToggleTooltip => Loc.Get(IsGridView ? "LOCGameCollections_SwitchToListView" : "LOCGameCollections_SwitchToGridView");
+
+        // Poster shapes follow the aspect ratio setting. Grid cards keep their width, and list rows keep
+        // their height unless a wide ratio would make the thumbnail too wide.
+        private const double CardPosterWidth = 170;
+        private const double RowPosterHeight = 72;
+        private const double MaxRowPosterWidth = 128;
+
+        public double CardPosterHeight => CardPosterWidth * settings.Settings.CollectionPosterRatio;
+        public double RowPosterWidth => Math.Min(MaxRowPosterWidth, RowPosterHeight / settings.Settings.CollectionPosterRatio);
+        public double RowPosterActualHeight => RowPosterWidth * settings.Settings.CollectionPosterRatio;
+        public Stretch PosterStretch => settings.Settings.CollectionPosterStretch;
+
+        /// <summary>
+        /// Called after the settings are saved, so the posters take their new shape.
+        /// </summary>
+        public void OnDisplaySettingsChanged()
+        {
+            OnPropertyChanged(nameof(CardPosterHeight));
+            OnPropertyChanged(nameof(RowPosterWidth));
+            OnPropertyChanged(nameof(RowPosterActualHeight));
+            OnPropertyChanged(nameof(PosterStretch));
+        }
 
         public string CountText => Loc.CollectionCount(Cards.Count);
         public bool IsEmpty => Cards.Count == 0;

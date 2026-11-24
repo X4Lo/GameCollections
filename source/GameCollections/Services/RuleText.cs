@@ -89,6 +89,11 @@ namespace GameCollections.Services
                 parts.Add(rules.Blocks.Count > 1 ? "(" + text + ")" : text);
             }
 
+            if (rules.IncludeHidden)
+            {
+                parts.Add(Loc.Get("LOCGameCollections_RuleIncludesHiddenSuffix"));
+            }
+
             return string.Join(" ", parts);
         }
 

@@ -139,8 +139,8 @@ namespace GameCollections.Services
 
         /// <summary>
         /// Builds a predicate for the rules. Blocks are combined strictly from top to bottom, matching how
-        /// they read in the editor. Hidden games never match, and neither do damaged or incomplete rules,
-        /// so a broken rule can never fill a collection with the whole library.
+        /// they read in the editor. Hidden games match only when the rules include them. Damaged or incomplete
+        /// rules never match, so a broken rule can never fill a collection with the whole library.
         /// </summary>
         public static Func<Game, bool> Compile(DynamicRules rules, DateTime now)
         {
@@ -152,10 +152,11 @@ namespace GameCollections.Services
             var blocks = rules.Blocks
                 .Select(b => new { b.Join, Test = CompileBlock(b, now) })
                 .ToList();
+            var includeHidden = rules.IncludeHidden;
 
             return game =>
             {
-                if (game == null || game.Hidden)
+                if (game == null || (game.Hidden && !includeHidden))
                 {
                     return false;
                 }

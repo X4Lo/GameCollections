@@ -20,6 +20,18 @@ namespace GameCollections.Views
         public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(
             nameof(CornerRadius), typeof(CornerRadius), typeof(PosterImage), new PropertyMetadata(new CornerRadius(4)));
 
+        public static readonly DependencyProperty StretchProperty = DependencyProperty.Register(
+            nameof(Stretch), typeof(Stretch), typeof(PosterImage), new PropertyMetadata(Stretch.UniformToFill, OnSourceChanged));
+
+        /// <summary>
+        /// How the image fills the poster's shape.
+        /// </summary>
+        public Stretch Stretch
+        {
+            get => (Stretch)GetValue(StretchProperty);
+            set => SetValue(StretchProperty, value);
+        }
+
         public ImageSource Source
         {
             get => (ImageSource)GetValue(SourceProperty);
@@ -52,10 +64,12 @@ namespace GameCollections.Views
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (PosterImage)d;
-            var source = e.NewValue as ImageSource;
+            var source = control.Source;
             control.ImageBorder.Background = source == null
                 ? null
-                : new ImageBrush(source) { Stretch = Stretch.UniformToFill };
+                : new ImageBrush(source) { Stretch = control.Stretch };
+            // With a stretch that doesn't cover the whole shape, the placeholder glyph would show around the image.
+            control.PlaceholderGlyph.Visibility = source == null ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

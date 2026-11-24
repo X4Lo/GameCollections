@@ -117,7 +117,23 @@ Version history: **1** was the initial format (extension 1.0.0); **2** added `Ga
 `GameCollectionsSettings` is saved by Playnite to `config.json`. Add a property using `SetValue`, and bind to
 `Settings.<Name>` in `GameCollectionsSettingsView.xaml`. Mark state that shouldn't be saved with `[DontSerialize]`.
 Themes can read these properties through `{PluginSettings Plugin=GameCollections, Path=<Name>}`.
-`SettingsChanged` fires after the settings dialog is saved or cancelled.
+`SettingsChanged` fires after the settings dialog is saved or cancelled. The plugin uses it to swap the sidebar
+icon and to call `CollectionsRootViewModel.OnDisplaySettingsChanged`, which passes poster and cover changes on to
+the open pages.
+
+- **Aspect ratios** are stored as two numbers each (`CollectionPosterAspectWidth/Height`,
+  `GameCoverAspectWidth/Height`). Views read the computed `CollectionPosterRatio` and `GameCoverRatio` (height per
+  unit of width), which fall back to 2:3 for invalid values and are clamped to between 1:4 and 4:1.
+  `VerifySettings` rejects values that aren't greater than 0. The **Presets** menus come from
+  `GameCollectionsSettingsViewModel.Presets` and are built in the settings view's code-behind; picking one sets both
+  numbers.
+- **Stretch modes** are WPF `Stretch` values, applied by `PosterImage.Stretch` to its image brush.
+- **Sidebar icons**: `icon-white.png` and `icon-black.png` sit next to `icon.png` and are copied to the output by
+  the `icon*.png` item in the project file. They were made from `icon.png` with the folder solid and the cards
+  behind it in fainter tones, so regenerate them if the icon changes.
+- **Match theme** (`SidebarIconStyle.Theme`) uses `ThemedSidebarIcon` instead of a path: a rectangle filled with the
+  inherited `Foreground` and masked by `icon-black.png`'s opacity, sized by the inherited font size. Themes change the
+  sidebar button's `Foreground` on hover and selection, so it follows those shades the way font glyph icons do.
 
 ## Manual order
 

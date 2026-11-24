@@ -50,6 +50,16 @@ namespace GameCollections
                 new PosterStorage(Path.Combine(dataDirectory, "Posters")));
             dialogs = new DialogService(api, manager);
 
+            settings.SettingsChanged += (s, e) =>
+            {
+                if (sidebarItem != null)
+                {
+                    sidebarItem.Icon = GetSidebarIcon();
+                }
+
+                rootViewModel?.OnDisplaySettingsChanged();
+            };
+
             AddSettingsSupport(new AddSettingsSupportArgs
             {
                 SourceName = SourceName,
@@ -168,7 +178,7 @@ namespace GameCollections
             {
                 Title = Loc.Get("LOCGameCollections_SidebarTitle"),
                 Type = SiderbarItemType.View,
-                Icon = Path.Combine(GetPluginDirectory(), "icon.png"),
+                Icon = GetSidebarIcon(),
                 // A new view is built on every open, while the view model (current page, search,
                 // sort) persists so the user returns to where they left off.
                 Opened = () =>
@@ -285,6 +295,49 @@ namespace GameCollections
             {
                 dispatcher.BeginInvoke((Action)SafeAction);
             }
+        }
+
+        /// <summary>
+        /// The icon version chosen in the settings: the colored icon, or a white or black one that suits themes
+        /// with monochrome sidebar icons.
+        /// </summary>
+        // A path for the picture icons, or a control drawn in the theme's colours for Match theme.
+        private object GetSidebarIcon()
+        {
+            var colored = Path.Combine(GetPluginDirectory(), "icon.png");
+            string file;
+            switch (settings.Settings.SidebarIcon)
+            {
+                case SidebarIconStyle.Theme:
+                    // Only the black icon's opacity is used, as the shape to paint.
+                    var mask = Path.Combine(GetPluginDirectory(), "icon-black.png");
+                    if (!File.Exists(mask))
+                    {
+                        return colored;
+                    }
+
+                    try
+                    {
+                        return ThemedSidebarIcon.Create(mask);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e, "Failed to create the theme-coloured sidebar icon.");
+                        return colored;
+                    }
+                case SidebarIconStyle.White:
+                    file = "icon-white.png";
+                    break;
+                case SidebarIconStyle.Black:
+                    file = "icon-black.png";
+                    break;
+                default:
+                    file = "icon.png";
+                    break;
+            }
+
+            var path = Path.Combine(GetPluginDirectory(), file);
+            return File.Exists(path) ? path : colored;
         }
 
         private static string GetPluginDirectory()

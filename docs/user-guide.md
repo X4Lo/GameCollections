@@ -25,6 +25,31 @@ Click **Collections** in the sidebar. The page keeps its state (open collection,
 
 Deleting a collection never deletes or changes any games.
 
+## Appearance settings
+
+In the extension's settings (*Add-ons → Extension settings → Generic → Game Collections*):
+
+- **Sidebar → Icon**: **Match theme** (default) draws the icon in the same colours as the theme's other sidebar
+  icons, including their hover and selected shades. You can also choose the **Colored** icon, or a fixed **White**
+  or **Black** version. It changes as soon as you save.
+- **Collection posters**: the shape of posters on the Collections page and in a collection's header, as an
+  **aspect ratio** (width : height, default 2 : 3), and the **stretch mode**.
+- **Game covers on a collection's page**: the same for the game cards. The card size slider sets their width, and
+  the ratio sets their height.
+
+| Stretch mode | What the image does |
+|---|---|
+| None | Keeps its original size, centered. It may be cut off or leave empty space. |
+| Fill | Fills the shape exactly; the image is squashed or stretched if its shape differs. |
+| Uniform | Fits inside the shape without being cut off, leaving empty space at the sides or top and bottom. |
+| Uniform to fill (default) | Covers the shape without distortion, cutting off whatever doesn't fit. |
+
+Ratios can be decimals, such as 1.85 : 1. Very thin or tall shapes are limited to between 4 : 1 and 1 : 4.
+
+**Presets**, next to each ratio, fills in a common shape: DVD Box (27 : 38), Epic Games Store (3 : 4),
+GOG Galaxy 2.0 (22 : 31), IGDB (3 : 4), Square (1 : 1), Steam Banner (92 : 43), Steam Vertical Cover (2 : 3) or
+Twitch (3 : 4). The preset matching the current ratio is ticked.
+
 ## Creating and editing a collection
 
 | Field       | Notes |
@@ -46,7 +71,8 @@ editing a collection.
 - Between blocks, choose **AND** or **OR**. Blocks combine from top to bottom, so
   *A OR B AND C* means *(A or B) and C*.
 - The bar at the bottom shows how many games currently match, and some of their names.
-- Hidden games are never included.
+- Games hidden in Playnite are left out unless you tick **Include hidden games** below the blocks. When it's on,
+  the collection's rules summary says *(including hidden games)*. Hiding or unhiding a game updates the collection.
 
 | You can filter by | Conditions |
 |---|---|
